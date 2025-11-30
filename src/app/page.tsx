@@ -51,7 +51,7 @@ export default function Home() {
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
-      <div className="flex-1 p-4 overflow-hidden">
+      <div className="flex-1 overflow-hidden md:p-4">
         <Story storyId={selectedStoryId} onSelectStory={setSelectedStoryId} />
       </div>
     </main>

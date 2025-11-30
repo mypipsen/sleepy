@@ -102,9 +102,9 @@ export function Story({
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-white/5 p-4 shadow-xl ring-1 ring-white/10">
+    <div className="flex h-full w-full flex-col bg-white/5 md:p-4 md:shadow-xl md:ring-1 md:ring-white/10">
       {storyId && (
-        <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="mb-4 flex items-center justify-between border-b border-white/10 p-4 md:px-0 md:pt-0 md:pb-4">
           <h2 className="truncate text-lg font-semibold text-white">
             {existingStory?.prompt}
           </h2>
@@ -146,7 +146,7 @@ export function Story({
                   }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.role === "user"
+                  className={`max-w-full md:max-w-[80%] rounded-2xl px-4 py-2 ${msg.role === "user"
                     ? "bg-purple-600 text-white"
                     : "bg-white/10 text-white"
                     }`}
@@ -158,7 +158,7 @@ export function Story({
 
             {createStory.isPending && messages[messages.length - 1]?.role === "user" && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] rounded-2xl bg-white/10 px-4 py-2 text-white">
+                <div className="max-w-full md:max-w-[80%] rounded-2xl bg-white/10 px-4 py-2 text-white">
                   <span className="animate-pulse">Thinking...</span>
                 </div>
               </div>
@@ -168,7 +168,7 @@ export function Story({
       </div>
 
       {!storyId && (
-        <form onSubmit={handleSubmit} className="mt-4 flex gap-2 border-t border-white/10 pt-4">
+        <form onSubmit={handleSubmit} className="flex gap-2 border-t border-white/10 p-4 md:mt-4 md:px-0 md:pt-4 md:pb-0">
           <input
             type="text"
             value={input}
