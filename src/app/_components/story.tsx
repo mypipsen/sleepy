@@ -118,72 +118,108 @@ export function Story({
           </button>
         </div>
       )}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto space-y-4 p-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
-      >
-        {isLoading ? (
-          <div className="space-y-4 animate-pulse">
-            <div className="flex justify-end">
-              <div className="h-10 w-3/4 rounded-2xl bg-white/10"></div>
-            </div>
-            <div className="flex justify-start">
-              <div className="h-32 w-3/4 rounded-2xl bg-white/10"></div>
-            </div>
-          </div>
-        ) : (
-          <>
-            {messages.length === 0 && (
-              <div className="flex h-full items-center justify-center text-white/50">
-                <p>Type a prompt to start a story...</p>
-              </div>
-            )}
-
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"
-                  }`}
-              >
-                <div
-                  className={`max-w-full md:max-w-[80%] rounded-2xl px-4 py-2 ${msg.role === "user"
-                    ? "bg-purple-600 text-white"
-                    : "bg-white/10 text-white"
-                    }`}
+      {!storyId && messages.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center p-4">
+          <form onSubmit={handleSubmit} className="w-full max-w-2xl">
+            <div className="rounded-2xl border border-white/20 bg-white/5 p-6 shadow-2xl backdrop-blur-sm">
+              <h2 className="mb-4 text-center text-2xl font-bold text-white">
+                Start Your Story
+              </h2>
+              <p className="mb-6 text-center text-sm text-white/60">
+                Tell me what kind of story you'd like to hear...
+              </p>
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Once upon a time..."
+                rows={4}
+                className="mb-4 w-full resize-none rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition"
+                autoFocus
+              />
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={createStory.isPending || !input.trim()}
+                  className="rounded-xl bg-gradient-to-r from-purple-600 to-purple-500 px-8 py-3 font-semibold text-white shadow-lg transition hover:shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                </div>
+                  {createStory.isPending ? "Creating..." : "Create Story"}
+                </button>
               </div>
-            ))}
-
-            {createStory.isPending && messages[messages.length - 1]?.role === "user" && (
-              <div className="flex justify-start">
-                <div className="max-w-full md:max-w-[80%] rounded-2xl bg-white/10 px-4 py-2 text-white">
-                  <span className="animate-pulse">Thinking...</span>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {!storyId && (
-        <form onSubmit={handleSubmit} className="flex gap-2 border-t border-white/10 p-4 md:mt-4 md:px-0 md:pt-4 md:pb-0">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Tell me a story about..."
-            className="flex-1 rounded-full bg-white/10 px-4 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-          <button
-            type="submit"
-            disabled={createStory.isPending || !input.trim()}
-            className="rounded-full bg-purple-600 px-6 py-2 font-semibold text-white transition hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            </div>
+          </form>
+        </div>
+      ) : (
+        <>
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto space-y-4 p-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
           >
-            Send
-          </button>
-        </form>
+            {isLoading ? (
+              <div className="space-y-4 animate-pulse">
+                <div className="flex justify-end">
+                  <div className="h-10 w-3/4 rounded-2xl bg-white/10"></div>
+                </div>
+                <div className="flex justify-start">
+                  <div className="h-32 w-3/4 rounded-2xl bg-white/10"></div>
+                </div>
+              </div>
+            ) : (
+              <>
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"
+                      }`}
+                  >
+                    <div
+                      className={`max-w-full md:max-w-[80%] rounded-2xl px-4 py-2 ${msg.role === "user"
+                        ? "bg-purple-600 text-white"
+                        : "bg-white/10 text-white"
+                        }`}
+                    >
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {createStory.isPending && messages[messages.length - 1]?.role === "user" && (
+                  <div className="flex justify-start">
+                    <div className="max-w-full md:max-w-[80%] rounded-2xl bg-white/10 px-4 py-2 text-white">
+                      <span className="animate-pulse">Thinking...</span>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {!storyId && (
+            <form onSubmit={handleSubmit} className="border-t border-white/10 p-4 md:mt-4 md:px-0 md:pt-4 md:pb-0">
+              <div className="flex gap-2">
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Tell me a story about..."
+                  rows={1}
+                  className="flex-1 resize-none rounded-2xl bg-white/10 px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                  style={{ minHeight: "44px", maxHeight: "120px" }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = "44px";
+                    target.style.height = Math.min(target.scrollHeight, 120) + "px";
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={createStory.isPending || !input.trim()}
+                  className="self-end rounded-2xl bg-purple-600 px-6 py-3 font-semibold text-white transition hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Send
+                </button>
+              </div>
+            </form>
+          )}
+        </>
       )}
     </div>
   );
