@@ -54,15 +54,15 @@ export const authConfig = {
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.username, String(credentials.username)))
+          .where(eq(users.username, credentials.username as string))
           .limit(1);
 
-        if (!user || !user.password) {
+        if (!user?.password) {
           return null;
         }
 
         const isValid = await compare(
-          String(credentials.password),
+          credentials.password as string,
           user.password,
         );
 

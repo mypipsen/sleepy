@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { db } from "./index";
 import { users } from "./schema";
 
-async function main() {
+async function seed() {
   await db.insert(users).values({
     username: "admin",
     email: "admin@pipsen.dev",
@@ -11,7 +11,7 @@ async function main() {
   });
 }
 
-main()
+seed()
   .then(() => {
     console.log("Seed completed");
     process.exit(0);
