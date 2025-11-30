@@ -4,17 +4,22 @@ import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { stories } from "~/server/db/schema";
+import { stories, instructions } from "~/server/db/schema";
+import { getStoryPrompt } from "~/server/prompts/story-prompt";
 
 export const storyRouter = createTRPCRouter({
   create: protectedProcedure
     .input(z.object({ prompt: z.string().min(1) }))
     .mutation(async function* ({ ctx, input }) {
+      const instruction = await ctx.db.query.instructions.findFirst({
+        where: eq(instructions.userId, ctx.session.user.id),
+      });
+
       const result = streamText({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
         model: openai("gpt-4.1-nano") as any,
         prompt: input.prompt,
-        system: "Tell me a short story. Use the prompt as inspiration. Always write the story in Danish.",
+        system: getStoryPrompt(instruction?.text ?? ""),
       });
 
       let text = "";
