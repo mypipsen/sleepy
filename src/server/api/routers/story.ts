@@ -28,11 +28,14 @@ export const storyRouter = createTRPCRouter({
         yield { type: "text" as const, content: textPart };
       }
 
-      const [story] = await ctx.db.insert(stories).values({
-        prompt: input.prompt,
-        text,
-        userId: ctx.session.user.id,
-      }).returning();
+      const [story] = await ctx.db
+        .insert(stories)
+        .values({
+          prompt: input.prompt,
+          text,
+          userId: ctx.session.user.id,
+        })
+        .returning();
 
       yield { type: "storyId" as const, content: story!.id };
     }),

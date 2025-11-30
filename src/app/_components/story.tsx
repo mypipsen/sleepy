@@ -41,7 +41,7 @@ export function Story({
   });
   const { data: existingStory, isLoading } = api.story.getById.useQuery(
     { id: storyId! },
-    { enabled: !!storyId }
+    { enabled: !!storyId },
   );
 
   // Load existing story
@@ -50,7 +50,11 @@ export function Story({
       shouldScrollRef.current = false;
       setMessages([
         { id: "prompt", role: "user", content: existingStory.prompt ?? "" },
-        { id: "response", role: "assistant", content: existingStory.text ?? "" },
+        {
+          id: "response",
+          role: "assistant",
+          content: existingStory.text ?? "",
+        },
       ]);
       // Don't load images for existing stories - only show for new ones
       setGeneratedImage(null);
@@ -87,7 +91,9 @@ export function Story({
     setInput("");
 
     try {
-      const result = await createStory.mutateAsync({ prompt: userMessage.content });
+      const result = await createStory.mutateAsync({
+        prompt: userMessage.content,
+      });
       let storyId: number | null = null;
 
       for await (const chunk of result) {
@@ -96,8 +102,8 @@ export function Story({
             prev.map((msg) =>
               msg.id === assistantMessageId
                 ? { ...msg, content: msg.content + chunk.content }
-                : msg
-            )
+                : msg,
+            ),
           );
         } else if (chunk.type === "storyId") {
           storyId = chunk.content;
@@ -155,14 +161,14 @@ export function Story({
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Once upon a time..."
                 rows={4}
-                className="mb-4 w-full resize-none rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition"
+                className="mb-4 w-full resize-none rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 focus:outline-none"
                 autoFocus
               />
               <div className="flex justify-end">
                 <button
                   type="submit"
                   disabled={createStory.isPending || !input.trim()}
-                  className="rounded-xl bg-gradient-to-r from-purple-600 to-purple-500 px-8 py-3 font-semibold text-white shadow-lg transition hover:shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-xl bg-gradient-to-r from-purple-600 to-purple-500 px-8 py-3 font-semibold text-white shadow-lg transition hover:shadow-purple-500/50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {createStory.isPending ? "Creating..." : "Create Story"}
                 </button>
@@ -174,10 +180,10 @@ export function Story({
         <>
           <div
             ref={scrollRef}
-            className="flex-1 overflow-y-auto space-y-4 p-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+            className="scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent flex-1 space-y-4 overflow-y-auto p-4"
           >
             {isLoading ? (
-              <div className="space-y-4 animate-pulse">
+              <div className="animate-pulse space-y-4">
                 <div className="flex justify-end">
                   <div className="h-10 w-3/4 rounded-2xl bg-white/10"></div>
                 </div>
@@ -190,14 +196,16 @@ export function Story({
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"
-                      }`}
+                    className={`flex ${
+                      msg.role === "user" ? "justify-end" : "justify-start"
+                    }`}
                   >
                     <div
-                      className={`max-w-full md:max-w-[80%] rounded-2xl px-4 py-2 ${msg.role === "user"
-                        ? "bg-purple-600 text-white"
-                        : "bg-white/10 text-white"
-                        }`}
+                      className={`max-w-full rounded-2xl px-4 py-2 md:max-w-[80%] ${
+                        msg.role === "user"
+                          ? "bg-purple-600 text-white"
+                          : "bg-white/10 text-white"
+                      }`}
                     >
                       <p className="whitespace-pre-wrap">{msg.content}</p>
                     </div>
@@ -205,56 +213,64 @@ export function Story({
                 ))}
 
                 {/* Display generated image */}
-                {(generatedImage || generateImage.isPending) && (
-                  <div className="flex justify-start">
-                    <div className="max-w-full md:max-w-[80%] rounded-2xl bg-white/10 p-4">
-                      {generateImage.isPending ? (
-                        <div className="flex items-center gap-3 text-white">
-                          <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-500 border-t-transparent"></div>
-                          <span>Generating image...</span>
-                        </div>
-                      ) : generatedImage ? (
-                        <img
-                          src={`data:image/png;base64,${generatedImage}`}
-                          alt="Generated story illustration"
-                          className="rounded-xl w-full h-auto"
-                        />
-                      ) : null}
+                {
+                  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                  (generatedImage || generateImage.isPending) && (
+                    <div className="flex justify-start">
+                      <div className="max-w-full rounded-2xl bg-white/10 p-4 md:max-w-[80%]">
+                        {generateImage.isPending ? (
+                          <div className="flex items-center gap-3 text-white">
+                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-500 border-t-transparent"></div>
+                            <span>Generating image...</span>
+                          </div>
+                        ) : generatedImage ? (
+                          <img
+                            src={`data:image/png;base64,${generatedImage}`}
+                            alt="Generated story illustration"
+                            className="h-auto w-full rounded-xl"
+                          />
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )
+                }
 
-                {createStory.isPending && messages[messages.length - 1]?.role === "user" && (
-                  <div className="flex justify-start">
-                    <div className="max-w-full md:max-w-[80%] rounded-2xl bg-white/10 px-4 py-2 text-white">
-                      <span className="animate-pulse">Thinking...</span>
+                {createStory.isPending &&
+                  messages[messages.length - 1]?.role === "user" && (
+                    <div className="flex justify-start">
+                      <div className="max-w-full rounded-2xl bg-white/10 px-4 py-2 text-white md:max-w-[80%]">
+                        <span className="animate-pulse">Thinking...</span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </>
             )}
           </div>
 
           {!storyId && (
-            <form onSubmit={handleSubmit} className="border-t border-white/10 p-4 md:mt-4 md:px-0 md:pt-4 md:pb-0">
+            <form
+              onSubmit={handleSubmit}
+              className="border-t border-white/10 p-4 md:mt-4 md:px-0 md:pt-4 md:pb-0"
+            >
               <div className="flex gap-2">
                 <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Tell me a story about..."
                   rows={1}
-                  className="flex-1 resize-none rounded-2xl bg-white/10 px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                  className="flex-1 resize-none rounded-2xl bg-white/10 px-4 py-3 text-white placeholder-white/50 transition focus:ring-2 focus:ring-purple-500 focus:outline-none"
                   style={{ minHeight: "44px", maxHeight: "120px" }}
                   onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement;
                     target.style.height = "44px";
-                    target.style.height = Math.min(target.scrollHeight, 120) + "px";
+                    target.style.height =
+                      Math.min(target.scrollHeight, 120) + "px";
                   }}
                 />
                 <button
                   type="submit"
                   disabled={createStory.isPending || !input.trim()}
-                  className="self-end rounded-2xl bg-purple-600 px-6 py-3 font-semibold text-white transition hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="self-end rounded-2xl bg-purple-600 px-6 py-3 font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Send
                 </button>
