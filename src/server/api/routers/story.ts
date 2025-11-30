@@ -26,13 +26,13 @@ export const storyRouter = createTRPCRouter({
       await ctx.db.insert(stories).values({
         prompt: input.prompt,
         text,
-        createdById: ctx.session.user.id,
+        userId: ctx.session.user.id,
       });
     }),
 
   getAll: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.query.stories.findMany({
-      where: eq(stories.createdById, ctx.session.user.id),
+      where: eq(stories.userId, ctx.session.user.id),
       orderBy: (stories, { desc }) => [desc(stories.createdAt)],
     });
   }),
@@ -43,7 +43,7 @@ export const storyRouter = createTRPCRouter({
       return await ctx.db.query.stories.findFirst({
         where: and(
           eq(stories.id, input.id),
-          eq(stories.createdById, ctx.session.user.id),
+          eq(stories.userId, ctx.session.user.id),
         ),
       });
     }),
@@ -56,7 +56,7 @@ export const storyRouter = createTRPCRouter({
         .where(
           and(
             eq(stories.id, input.id),
-            eq(stories.createdById, ctx.session.user.id),
+            eq(stories.userId, ctx.session.user.id),
           ),
         );
     }),

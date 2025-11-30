@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { index, pgTable, primaryKey } from "drizzle-orm/pg-core";
-import { type AdapterAccount } from "next-auth/adapters";
+import type { AdapterAccountType } from "@auth/core/adapters";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -16,6 +16,8 @@ export const users = pgTable("user", (d) => ({
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: d.varchar({ length: 255 }),
+  username: d.varchar({ length: 255 }).unique(),
+  password: d.varchar({ length: 255 }),
   email: d.varchar({ length: 255 }).notNull(),
   emailVerified: d
     .timestamp({
@@ -37,7 +39,7 @@ export const accounts = pgTable(
       .varchar({ length: 255 })
       .notNull()
       .references(() => users.id),
-    type: d.varchar({ length: 255 }).$type<AdapterAccount["type"]>().notNull(),
+    type: d.varchar({ length: 255 }).$type<AdapterAccountType>().notNull(),
     provider: d.varchar({ length: 255 }).notNull(),
     providerAccountId: d.varchar({ length: 255 }).notNull(),
     refresh_token: d.text(),
@@ -91,7 +93,7 @@ export const stories = pgTable(
     id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
     prompt: d.text(),
     text: d.text(),
-    createdById: d
+    userId: d
       .varchar({ length: 255 })
       .notNull()
       .references(() => users.id),
@@ -101,5 +103,5 @@ export const stories = pgTable(
       .notNull(),
     updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
   }),
-  (t) => [index("created_by_idx").on(t.createdById)],
+  (t) => [index("user_id_idx").on(t.userId)],
 );
