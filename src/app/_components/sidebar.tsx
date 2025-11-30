@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession, signOut } from "next-auth/react";
 import { api } from "~/trpc/react";
 
 interface SidebarProps {
@@ -16,6 +17,11 @@ export function Sidebar({
     onClose,
 }: SidebarProps) {
     const { data: stories, isLoading } = api.story.getAll.useQuery();
+    const { data: session } = useSession();
+
+    const handleLogout = async () => {
+        await signOut({ callbackUrl: "/" });
+    };
 
     return (
         <>
@@ -75,6 +81,48 @@ export function Sidebar({
                             ))}
                         </div>
                     )}
+                </div>
+
+                {/* User Info and Logout */}
+                <div className="border-t border-white/10 p-4">
+                    <div className="mb-3 flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-600 text-sm font-semibold">
+                            {session?.user?.name?.[0]?.toUpperCase() ?? session?.user?.email?.[0]?.toUpperCase() ?? "U"}
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                            <div className="truncate text-sm font-medium text-white">
+                                {session?.user?.name ?? session?.user?.email ?? "User"}
+                            </div>
+                            {session?.user?.name && session?.user?.email && (
+                                <div className="truncate text-xs text-white/40">
+                                    {session.user.email}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleLogout}
+                        className="w-full rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+                    >
+                        <span className="flex items-center justify-center gap-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
+                            </svg>
+                            Logout
+                        </span>
+                    </button>
                 </div>
             </div>
         </>
