@@ -1,36 +1,59 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 import { Story } from "~/app/_components/story";
-import { auth } from "~/server/auth";
-import { HydrateClient } from "~/trpc/server";
+import { Sidebar } from "~/app/_components/sidebar";
 
-export default async function Home() {
-  const session = await auth();
+export default function Home() {
+  const { data: session } = useSession();
+  const [selectedStoryId, setSelectedStoryId] = useState<number | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  return (
-    <HydrateClient>
+  if (!session) {
+    return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
             sl<span className="text-[hsl(280,100%,70%)]">ee</span>py
           </h1>
           <div className="flex flex-col items-center gap-2">
-            <div className="flex flex-col items-center justify-center gap-4">
-              <p className="text-center text-2xl text-white">
-                {session && <span>Logged in as {session.user?.name}</span>}
-              </p>
-              <Link
-                href={session ? "/api/auth/signout" : "/api/auth/signin"}
-                className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-              >
-                {session ? "Sign out" : "Sign in"}
-              </Link>
-            </div>
+            <Link
+              href="/api/auth/signin"
+              className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
+            >
+              Sign in
+            </Link>
           </div>
-
-          {session?.user && <Story />}
         </div>
       </main>
-    </HydrateClient>
+    );
+  }
+
+  return (
+    <main className="flex h-screen flex-col md:flex-row bg-[#15162c] text-white">
+      {/* Mobile Header */}
+      <div className="flex items-center border-b border-white/10 p-4 md:hidden">
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="mr-4 rounded-lg p-2 text-white/70 hover:bg-white/10"
+        >
+          ☰
+        </button>
+        <span className="font-bold">Sleepy</span>
+      </div>
+
+      <Sidebar
+        onSelectStory={setSelectedStoryId}
+        selectedStoryId={selectedStoryId}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
+      <div className="flex-1 p-4 overflow-hidden">
+        <Story storyId={selectedStoryId} onSelectStory={setSelectedStoryId} />
+      </div>
+    </main>
   );
 }
