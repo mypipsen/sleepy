@@ -3,6 +3,7 @@ import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 
 import { db } from "~/server/db";
 import {
@@ -47,24 +48,29 @@ export const authConfig = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
+        const credentialsSchema = z.object({
+          username: z.string().min(1).max(255),
+          password: z.string().min(1).max(255),
+        });
+
+        const parsedCredentials = credentialsSchema.safeParse(credentials);
+
+        if (!parsedCredentials.success) {
           return null;
         }
 
+        const { username, password } = parsedCredentials.data;
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.username, credentials.username as string))
+          .where(eq(users.username, username))
           .limit(1);
 
         if (!user?.password) {
           return null;
         }
 
-        const isValid = await compare(
-          credentials.password as string,
-          user.password,
-        );
+        const isValid = await compare(password, user.password);
 
         if (!isValid) {
           return null;
