@@ -19,20 +19,22 @@ export const storyRouter = createTRPCRouter({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
         model: openai("gpt-4.1-nano") as any,
         prompt: input.prompt,
-        system: getStoryPrompt(instruction?.text ?? ""),
+        system: getStoryPrompt(String(instruction?.text)),
       });
 
       let text = "";
       for await (const textPart of result.textStream) {
         text += textPart;
-        yield textPart;
+        yield { type: "text" as const, content: textPart };
       }
 
-      await ctx.db.insert(stories).values({
+      const [story] = await ctx.db.insert(stories).values({
         prompt: input.prompt,
         text,
         userId: ctx.session.user.id,
-      });
+      }).returning();
+
+      yield { type: "storyId" as const, content: story!.id };
     }),
 
   getAll: protectedProcedure.query(async ({ ctx }) => {

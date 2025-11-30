@@ -20,10 +20,19 @@ export function Story({
   const utils = api.useUtils();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const shouldScrollRef = useRef(true);
 
   const createStory = api.story.create.useMutation();
+  const generateImage = api.image.create.useMutation({
+    onSuccess: (imageBase64) => {
+      setGeneratedImage(imageBase64);
+    },
+    onError: (error) => {
+      console.error("Failed to generate image:", error);
+    },
+  });
   const deleteStory = api.story.delete.useMutation({
     onSuccess: async () => {
       await utils.story.getAll.invalidate();
@@ -43,8 +52,11 @@ export function Story({
         { id: "prompt", role: "user", content: existingStory.prompt ?? "" },
         { id: "response", role: "assistant", content: existingStory.text ?? "" },
       ]);
+      // Don't load images for existing stories - only show for new ones
+      setGeneratedImage(null);
     } else if (!storyId) {
       setMessages([]);
+      setGeneratedImage(null);
     }
   }, [storyId, existingStory]);
 
@@ -76,19 +88,29 @@ export function Story({
 
     try {
       const result = await createStory.mutateAsync({ prompt: userMessage.content });
+      let storyId: number | null = null;
 
       for await (const chunk of result) {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === assistantMessageId
-              ? { ...msg, content: msg.content + chunk }
-              : msg
-          )
-        );
+        if (chunk.type === "text") {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: msg.content + chunk.content }
+                : msg
+            )
+          );
+        } else if (chunk.type === "storyId") {
+          storyId = chunk.content;
+        }
       }
 
       // Refresh the sidebar history
       await utils.story.getAll.invalidate();
+
+      // Trigger image generation if we have a story ID
+      if (storyId) {
+        generateImage.mutate({ storyId });
+      }
     } catch (error) {
       console.error("Failed to generate story:", error);
       // Optionally handle error state in UI
@@ -126,7 +148,7 @@ export function Story({
                 Start Your Story
               </h2>
               <p className="mb-6 text-center text-sm text-white/60">
-                Tell me what kind of story you'd like to hear...
+                Tell me what kind of story you would like to hear...
               </p>
               <textarea
                 value={input}
@@ -181,6 +203,26 @@ export function Story({
                     </div>
                   </div>
                 ))}
+
+                {/* Display generated image */}
+                {(generatedImage || generateImage.isPending) && (
+                  <div className="flex justify-start">
+                    <div className="max-w-full md:max-w-[80%] rounded-2xl bg-white/10 p-4">
+                      {generateImage.isPending ? (
+                        <div className="flex items-center gap-3 text-white">
+                          <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-500 border-t-transparent"></div>
+                          <span>Generating image...</span>
+                        </div>
+                      ) : generatedImage ? (
+                        <img
+                          src={`data:image/png;base64,${generatedImage}`}
+                          alt="Generated story illustration"
+                          className="rounded-xl w-full h-auto"
+                        />
+                      ) : null}
+                    </div>
+                  </div>
+                )}
 
                 {createStory.isPending && messages[messages.length - 1]?.role === "user" && (
                   <div className="flex justify-start">
