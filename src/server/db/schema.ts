@@ -105,3 +105,22 @@ export const stories = pgTable(
   }),
   (t) => [index("user_id_idx").on(t.userId)],
 );
+
+export const instructions = pgTable(
+  "instruction",
+  (d) => ({
+    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    text: d.text(),
+    userId: d
+      .varchar({ length: 255 })
+      .notNull()
+      .unique()
+      .references(() => users.id),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+  }),
+  (t) => [index("instruction_user_id_idx").on(t.userId)],
+);

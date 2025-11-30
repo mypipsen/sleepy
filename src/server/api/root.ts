@@ -1,4 +1,5 @@
 import { storyRouter } from "~/server/api/routers/story";
+import { instructionRouter } from "~/server/api/routers/instruction";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -8,6 +9,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   story: storyRouter,
+  instruction: instructionRouter,
 });
 
 // export type definition of API

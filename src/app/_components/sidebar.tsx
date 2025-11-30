@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 
 interface SidebarProps {
@@ -18,9 +19,15 @@ export function Sidebar({
 }: SidebarProps) {
     const { data: stories, isLoading } = api.story.getAll.useQuery();
     const { data: session } = useSession();
+    const router = useRouter();
 
     const handleLogout = async () => {
         await signOut({ callbackUrl: "/" });
+    };
+
+    const handleInstructions = () => {
+        router.push("/instructions");
+        onClose();
     };
 
     return (
@@ -100,6 +107,28 @@ export function Sidebar({
                             )}
                         </div>
                     </div>
+                    <button
+                        onClick={handleInstructions}
+                        className="mb-2 w-full rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+                    >
+                        <span className="flex items-center justify-center gap-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M12 1v6m0 6v6m5.2-13.2 4.2-4.2M2.6 21.4l4.2-4.2m10.4 0 4.2 4.2M2.6 2.6l4.2 4.2" />
+                            </svg>
+                            Instructions
+                        </span>
+                    </button>
                     <button
                         onClick={handleLogout}
                         className="w-full rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
