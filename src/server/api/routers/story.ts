@@ -10,7 +10,8 @@ export const storyRouter = createTRPCRouter({
     .input(z.object({ prompt: z.string().min(1) }))
     .mutation(async function* ({ ctx, input }) {
       const result = streamText({
-        model: openai("gpt-4.1-nano"),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+        model: openai("gpt-4.1-nano") as any,
         prompt: input.prompt,
         system: "Tell me a short story. Use the prompt as inspiration.",
       });
