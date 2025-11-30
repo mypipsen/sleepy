@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { Story } from "~/app/_components/story";
-import { StoryStream } from "~/app/_components/story-stream";
 import { auth } from "~/server/auth";
 import { HydrateClient } from "~/trpc/server";
 
@@ -30,7 +29,6 @@ export default async function Home() {
           </div>
 
           {session?.user && <Story />}
-          {session?.user && <StoryStream />}
         </div>
       </main>
     </HydrateClient>

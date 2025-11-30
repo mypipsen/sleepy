@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 
 import { api } from "~/trpc/react";
 
 export function Story() {
   const utils = api.useUtils();
   const [prompt, setPrompt] = useState("");
+  const [storyChunks, setStoryChunks] = useState<string[]>([]);
 
   const createStory = api.story.create.useMutation({
     onSuccess: async () => {
@@ -17,12 +18,21 @@ export function Story() {
 
   return (
     <div className="w-full max-w-xs">
-      {createStory.isSuccess && <div>{JSON.stringify(createStory.data.story)}</div>}
+      {createStory.isError && <p>Error: {createStory.error.message}</p>}
+      <p>
+        {storyChunks.map((chunk, index) => (
+          <Fragment key={index}>{chunk}</Fragment>
+        ))}
+      </p>
 
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          createStory.mutate({ prompt });
+          setStoryChunks([]);
+          const result = await createStory.mutateAsync({ prompt });
+          for await (const chunk of result) {
+            setStoryChunks((prev) => [...prev, chunk]);
+          }
         }}
         className="flex flex-col gap-2"
       >

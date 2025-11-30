@@ -8,26 +8,23 @@ import { stories } from "~/server/db/schema";
 export const storyRouter = createTRPCRouter({
   create: protectedProcedure
     .input(z.object({ prompt: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      const story = await ctx.db
-        .insert(stories)
-        .values({
-          prompt: input.prompt,
-          text: "Hello there",
-          createdById: ctx.session.user.id,
-        })
-        .returning();
+    .mutation(async function* ({ ctx, input }) {
+      const result = streamText({
+        model: openai("gpt-4.1-nano"),
+        prompt: input.prompt,
+        system: "Tell me a short story. Use the prompt as inspiration.",
+      });
 
-      return { story };
+      let text = "";
+      for await (const textPart of result.textStream) {
+        text += textPart;
+        yield textPart;
+      }
+
+      await ctx.db.insert(stories).values({
+        prompt: input.prompt,
+        text,
+        createdById: ctx.session.user.id,
+      });
     }),
-  stream: protectedProcedure.query(async function* () {
-    const result = streamText({
-      model: openai("gpt-4o"),
-      prompt: "Tell me a short story.",
-    });
-
-    for await (const textPart of result.textStream) {
-      yield textPart;
-    }
-  }),
 });
