@@ -9,10 +9,8 @@ import {
   Typography,
   Paper,
   CircularProgress,
-  IconButton,
   Container,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
 import SendIcon from "@mui/icons-material/Send";
 
 type Message = {
@@ -55,8 +53,7 @@ export function Story({
           content: existingStory.text ?? "",
         },
       ]);
-      // Don't load images for existing stories - only show for new ones
-      setGeneratedImage(null);
+      setGeneratedImage(existingStory.imageUrl ?? null);
     } else if (!storyId) {
       setMessages([]);
       setGeneratedImage(null);
@@ -146,7 +143,15 @@ export function Story({
       )}
 
       {!storyId && messages.length === 0 ? (
-        <Container maxWidth="sm" sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Container
+          maxWidth="sm"
+          sx={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <Paper
             elevation={3}
             sx={{
@@ -182,7 +187,13 @@ export function Story({
                 variant="contained"
                 size="large"
                 disabled={isGenerating || !input.trim()}
-                endIcon={isGenerating ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+                endIcon={
+                  isGenerating ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <SendIcon />
+                  )
+                }
               >
                 {isGenerating ? "Creating..." : "Create Story"}
               </Button>
@@ -204,8 +215,24 @@ export function Story({
           >
             {isLoading ? (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <Box sx={{ alignSelf: "flex-end", width: "70%", height: 40, bgcolor: "action.hover", borderRadius: 2 }} />
-                <Box sx={{ alignSelf: "flex-start", width: "70%", height: 120, bgcolor: "action.hover", borderRadius: 2 }} />
+                <Box
+                  sx={{
+                    alignSelf: "flex-end",
+                    width: "70%",
+                    height: 40,
+                    bgcolor: "action.hover",
+                    borderRadius: 2,
+                  }}
+                />
+                <Box
+                  sx={{
+                    alignSelf: "flex-start",
+                    width: "70%",
+                    height: 120,
+                    bgcolor: "action.hover",
+                    borderRadius: 2,
+                  }}
+                />
               </Box>
             ) : (
               <>
@@ -214,7 +241,8 @@ export function Story({
                     key={msg.id}
                     sx={{
                       display: "flex",
-                      justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
+                      justifyContent:
+                        msg.role === "user" ? "flex-end" : "flex-start",
                     }}
                   >
                     <Paper
@@ -223,11 +251,18 @@ export function Story({
                         p: 2,
                         maxWidth: "80%",
                         borderRadius: 2,
-                        bgcolor: msg.role === "user" ? "primary.main" : "action.hover",
-                        color: msg.role === "user" ? "primary.contrastText" : "text.primary",
+                        bgcolor:
+                          msg.role === "user" ? "primary.main" : "action.hover",
+                        color:
+                          msg.role === "user"
+                            ? "primary.contrastText"
+                            : "text.primary",
                       }}
                     >
-                      <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+                      <Typography
+                        variant="body1"
+                        sx={{ whiteSpace: "pre-wrap" }}
+                      >
                         {msg.content}
                       </Typography>
                     </Paper>
@@ -249,21 +284,36 @@ export function Story({
                         }}
                       >
                         {isWaitingForImage ? (
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
                             <CircularProgress size={20} />
                             <Typography>Generating image...</Typography>
                           </Box>
                         ) : (
                           <Box
                             component="img"
-                            src={`data:image/png;base64,${generatedImage}`}
+                            src={
+                              generatedImage?.startsWith("http")
+                                ? generatedImage
+                                : `data:image/png;base64,${generatedImage}`
+                            }
                             alt="Generated story illustration"
-                            sx={{ width: "100%", borderRadius: 1, height: "auto" }}
+                            sx={{
+                              width: "100%",
+                              borderRadius: 1,
+                              height: "auto",
+                            }}
                           />
                         )}
                       </Paper>
                     </Box>
-                  )}
+                  )
+                }
 
                 {createStory.isPending &&
                   messages[messages.length - 1]?.role === "user" && (
@@ -276,52 +326,15 @@ export function Story({
                           bgcolor: "action.hover",
                         }}
                       >
-                        <Typography className="animate-pulse">Thinking...</Typography>
+                        <Typography className="animate-pulse">
+                          Thinking...
+                        </Typography>
                       </Paper>
                     </Box>
                   )}
               </>
             )}
           </Box>
-
-          {!storyId && (
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-              sx={{
-                p: 2,
-                borderTop: 1,
-                borderColor: "divider",
-                bgcolor: "background.paper",
-              }}
-            >
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <TextField
-                  fullWidth
-                  multiline
-                  maxRows={4}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Tell me a story about..."
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 2,
-                    }
-                  }}
-                />
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={isGenerating || !input.trim()}
-                  sx={{ borderRadius: 2, minWidth: 80 }}
-                >
-                  Send
-                </Button>
-              </Box>
-            </Box>
-          )}
         </>
       )}
     </Box>

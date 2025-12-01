@@ -4,7 +4,16 @@ import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Box, Typography, Button, IconButton, AppBar, Toolbar, useTheme, useMediaQuery } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  IconButton,
+  AppBar,
+  Toolbar,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
 import { Story } from "~/app/_components/story";
@@ -44,9 +53,24 @@ function HomeContent() {
           p: 4,
         }}
       >
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-          <Typography variant="h1" fontWeight="800" sx={{ fontSize: { xs: "3rem", sm: "5rem" } }}>
-            sl<Box component="span" sx={{ color: "secondary.main" }}>ee</Box>py
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <Typography
+            variant="h1"
+            fontWeight="800"
+            sx={{ fontSize: { xs: "3rem", sm: "5rem" } }}
+          >
+            sl
+            <Box component="span" sx={{ color: "secondary.main" }}>
+              ee
+            </Box>
+            py
           </Typography>
           <Button
             component={Link}
@@ -64,7 +88,14 @@ function HomeContent() {
   }
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden", bgcolor: "background.default" }}>
+    <Box
+      sx={{
+        display: "flex",
+        height: "100vh",
+        overflow: "hidden",
+        bgcolor: "background.default",
+      }}
+    >
       <Sidebar
         onSelectStory={handleSelectStory}
         selectedStoryId={selectedStoryId}
@@ -72,9 +103,22 @@ function HomeContent() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          overflow: "hidden",
+        }}
+      >
         {isMobile && (
-          <AppBar position="static" color="transparent" elevation={0} sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <AppBar
+            position="static"
+            color="transparent"
+            elevation={0}
+            sx={{ borderBottom: 1, borderColor: "divider" }}
+          >
             <Toolbar>
               <IconButton
                 edge="start"
@@ -92,7 +136,15 @@ function HomeContent() {
           </AppBar>
         )}
 
-        <Box component="main" sx={{ flexGrow: 1, p: { xs: 0, md: 3 }, height: "100%", overflow: "hidden" }}>
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: { xs: 0, md: 3 },
+            height: "100%",
+            overflow: "hidden",
+          }}
+        >
           <Story storyId={selectedStoryId} onSelectStory={handleSelectStory} />
         </Box>
       </Box>

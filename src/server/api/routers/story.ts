@@ -1,12 +1,13 @@
 import { openai } from "@ai-sdk/openai";
+import { put } from "@vercel/blob";
 import { streamText, experimental_generateImage as generateImage } from "ai";
-import { getImagePrompt } from "~/server/prompts/image-prompt";
-import { z } from "zod";
 import { and, eq } from "drizzle-orm";
+import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { stories, instructions } from "~/server/db/schema";
 import { getStoryPrompt } from "~/server/prompts/story-prompt";
+import { getImagePrompt } from "~/server/prompts/image-prompt";
 
 export const storyRouter = createTRPCRouter({
   create: protectedProcedure
@@ -38,7 +39,11 @@ export const storyRouter = createTRPCRouter({
         })
         .returning();
 
-      yield { type: "storyId" as const, content: story!.id };
+      if (!story) {
+        return;
+      }
+
+      yield { type: "storyId" as const, content: story.id };
 
       const { image } = await generateImage({
         model: openai.image("dall-e-3"),
@@ -47,6 +52,21 @@ export const storyRouter = createTRPCRouter({
       });
 
       yield { type: "image" as const, content: image.base64 };
+
+      const { url } = await put(
+        `images/story-${story.id}`,
+        Buffer.from(image.base64, "base64"),
+        {
+          contentType: image.mediaType,
+          access: "public",
+          addRandomSuffix: true,
+        },
+      );
+
+      await ctx.db
+        .update(stories)
+        .set({ imageUrl: url })
+        .where(eq(stories.id, story.id));
     }),
 
   getAll: protectedProcedure.query(async ({ ctx }) => {

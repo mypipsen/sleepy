@@ -34,6 +34,7 @@
     "@trpc/client": "^11.0.0",
     "@trpc/react-query": "^11.0.0",
     "@trpc/server": "^11.0.0",
+    "@vercel/blob": "^2.0.0",
     "ai": "^6.0.0-beta.124",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.41.0",
