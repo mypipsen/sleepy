@@ -1,8 +1,37 @@
 "use client";
 
+import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
+import {
+    Drawer,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    ListItemIcon,
+    Toolbar,
+    Divider,
+    Box,
+    Typography,
+    Avatar,
+    Button,
+    useTheme,
+    useMediaQuery,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import InfoIcon from "@mui/icons-material/Info";
+import LogoutIcon from "@mui/icons-material/Logout";
+import DeleteIcon from "@mui/icons-material/Delete";
+
+const drawerWidth = 280;
 
 interface SidebarProps {
     onSelectStory: (id: number | null) => void;
@@ -17,9 +46,26 @@ export function Sidebar({
     isOpen,
     onClose,
 }: SidebarProps) {
+    const utils = api.useUtils();
     const { data: stories, isLoading } = api.story.getAll.useQuery();
     const { data: session } = useSession();
     const router = useRouter();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [storyToDelete, setStoryToDelete] = useState<number | null>(null);
+
+    const deleteStory = api.story.delete.useMutation({
+        onSuccess: async () => {
+            await utils.story.getAll.invalidate();
+            if (selectedStoryId === storyToDelete) {
+                onSelectStory(null);
+            }
+            setDeleteDialogOpen(false);
+            setStoryToDelete(null);
+        },
+    });
 
     const handleLogout = async () => {
         await signOut({ callbackUrl: "/" });
@@ -27,133 +73,192 @@ export function Sidebar({
 
     const handleInstructions = () => {
         router.push("/instructions");
-        onClose();
+        if (isMobile) onClose();
     };
 
-    return (
-        <>
-            {/* Mobile Backdrop */}
-            {isOpen && (
-                <div
-                    className="fixed inset-0 z-20 bg-black/50 md:hidden"
-                    onClick={onClose}
-                />
-            )}
+    const handleDeleteClick = (e: React.MouseEvent, id: number) => {
+        e.stopPropagation();
+        setStoryToDelete(id);
+        setDeleteDialogOpen(true);
+    };
 
-            {/* Sidebar */}
-            <div
-                className={`fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-white/10 bg-[#15162c] transition-transform duration-300 md:relative md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"
-                    }`}
-            >
-                <div className="flex items-center justify-between p-4">
-                    <button
-                        onClick={() => {
-                            onSelectStory(null);
-                            onClose();
-                        }}
-                        className="flex-1 rounded-lg bg-purple-600 px-4 py-2 font-semibold text-white transition hover:bg-purple-500"
-                    >
-                        + New Story
-                    </button>
-                    <button
-                        onClick={onClose}
-                        className="ml-2 rounded-lg p-2 text-white/70 hover:bg-white/10 md:hidden"
-                    >
-                        ✕
-                    </button>
-                </div>
+    const confirmDelete = () => {
+        if (storyToDelete) {
+            deleteStory.mutate({ id: storyToDelete });
+        }
+    };
 
-                <div className="flex-1 overflow-y-auto p-2">
-                    {isLoading ? (
-                        <div className="p-4 text-center text-white/50">Loading...</div>
-                    ) : (
-                        <div className="space-y-2">
-                            {stories?.map((story) => (
-                                <button
-                                    key={story.id}
+    const drawerContent = (
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+            <Toolbar sx={{ px: 2 }}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    startIcon={<AddIcon />}
+                    onClick={() => {
+                        onSelectStory(null);
+                        if (isMobile) onClose();
+                    }}
+                >
+                    New Story
+                </Button>
+            </Toolbar>
+            <Divider />
+            <Box sx={{ flexGrow: 1, overflow: "auto" }}>
+                {isLoading ? (
+                    <Typography sx={{ p: 2, textAlign: "center", color: "text.secondary" }}>
+                        Loading...
+                    </Typography>
+                ) : (
+                    <List>
+                        {stories?.map((story) => (
+                            <ListItem
+                                key={story.id}
+                                disablePadding
+                                secondaryAction={
+                                    <IconButton
+                                        edge="end"
+                                        aria-label="delete"
+                                        onClick={(e) => handleDeleteClick(e, story.id)}
+                                        size="small"
+                                        sx={{ opacity: 0.6, "&:hover": { opacity: 1, color: "error.main" } }}
+                                    >
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                }
+                            >
+                                <ListItemButton
+                                    selected={selectedStoryId === story.id}
                                     onClick={() => {
                                         onSelectStory(story.id);
-                                        onClose();
+                                        if (isMobile) onClose();
                                     }}
-                                    className={`w-full rounded-lg px-4 py-3 text-left transition ${selectedStoryId === story.id
-                                        ? "bg-white/10 text-white"
-                                        : "text-white/70 hover:bg-white/5 hover:text-white"
-                                        }`}
+                                    sx={{ pr: 6 }} // Make room for secondary action
                                 >
-                                    <div className="truncate font-medium">{story.prompt}</div>
-                                    <div className="truncate text-xs text-white/40">
-                                        {new Date(story.createdAt).toLocaleDateString()}
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                                    <ListItemText
+                                        primary={story.prompt}
+                                        secondary={new Date(story.createdAt).toLocaleDateString()}
+                                        primaryTypographyProps={{
+                                            noWrap: true,
+                                            variant: "body2",
+                                            fontWeight: selectedStoryId === story.id ? "bold" : "medium",
+                                        }}
+                                        secondaryTypographyProps={{
+                                            noWrap: true,
+                                            variant: "caption",
+                                        }}
+                                    />
+                                </ListItemButton>
+                            </ListItem>
+                        ))}
+                    </List>
+                )}
+            </Box>
+            <Divider />
+            <Box sx={{ p: 2 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
+                    <Avatar sx={{ bgcolor: "primary.main", width: 32, height: 32 }}>
+                        {session?.user?.name?.[0]?.toUpperCase() ??
+                            session?.user?.email?.[0]?.toUpperCase() ??
+                            "U"}
+                    </Avatar>
+                    <Box sx={{ overflow: "hidden" }}>
+                        <Typography variant="subtitle2" noWrap>
+                            {session?.user?.name ?? session?.user?.email ?? "User"}
+                        </Typography>
+                        {session?.user?.name && session?.user?.email && (
+                            <Typography variant="caption" color="text.secondary" noWrap display="block">
+                                {session.user.email}
+                            </Typography>
+                        )}
+                    </Box>
+                </Box>
+                <List disablePadding>
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={handleInstructions} sx={{ borderRadius: 1 }}>
+                            <ListItemIcon sx={{ minWidth: 40 }}>
+                                <InfoIcon fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText primary="Instructions" />
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={handleLogout} sx={{ borderRadius: 1 }}>
+                            <ListItemIcon sx={{ minWidth: 40 }}>
+                                <LogoutIcon fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText primary="Logout" />
+                        </ListItemButton>
+                    </ListItem>
+                </List>
+            </Box>
 
-                {/* User Info and Logout */}
-                <div className="border-t border-white/10 p-4">
-                    <div className="mb-3 flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-600 text-sm font-semibold">
-                            {session?.user?.name?.[0]?.toUpperCase() ?? session?.user?.email?.[0]?.toUpperCase() ?? "U"}
-                        </div>
-                        <div className="flex-1 overflow-hidden">
-                            <div className="truncate text-sm font-medium text-white">
-                                {session?.user?.name ?? session?.user?.email ?? "User"}
-                            </div>
-                            {session?.user?.name && session?.user?.email && (
-                                <div className="truncate text-xs text-white/40">
-                                    {session.user.email}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <button
-                        onClick={handleInstructions}
-                        className="mb-2 w-full rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
-                    >
-                        <span className="flex items-center justify-center gap-2">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <circle cx="12" cy="12" r="3" />
-                                <path d="M12 1v6m0 6v6m5.2-13.2 4.2-4.2M2.6 21.4l4.2-4.2m10.4 0 4.2 4.2M2.6 2.6l4.2 4.2" />
-                            </svg>
-                            Instructions
-                        </span>
-                    </button>
-                    <button
-                        onClick={handleLogout}
-                        className="w-full rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
-                    >
-                        <span className="flex items-center justify-center gap-2">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                                <polyline points="16 17 21 12 16 7" />
-                                <line x1="21" y1="12" x2="9" y2="12" />
-                            </svg>
-                            Logout
-                        </span>
-                    </button>
-                </div>
-            </div>
-        </>
+            {/* Delete Confirmation Dialog */}
+            <Dialog
+                open={deleteDialogOpen}
+                onClose={() => setDeleteDialogOpen(false)}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                    {"Delete this story?"}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Are you sure you want to delete this story? This action cannot be undone.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={confirmDelete} color="error" autoFocus>
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Box>
+    );
+
+    return (
+        <Box
+            component="nav"
+            sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+        >
+            {/* Mobile Drawer */}
+            <Drawer
+                variant="temporary"
+                open={isOpen}
+                onClose={onClose}
+                ModalProps={{
+                    keepMounted: true, // Better open performance on mobile.
+                }}
+                sx={{
+                    display: { xs: "block", md: "none" },
+                    "& .MuiDrawer-paper": {
+                        boxSizing: "border-box",
+                        width: drawerWidth,
+                    },
+                }}
+            >
+                {drawerContent}
+            </Drawer>
+
+            {/* Desktop Drawer */}
+            <Drawer
+                variant="permanent"
+                sx={{
+                    display: { xs: "none", md: "block" },
+                    "& .MuiDrawer-paper": {
+                        boxSizing: "border-box",
+                        width: drawerWidth,
+                    },
+                }}
+                open
+            >
+                {drawerContent}
+            </Drawer>
+        </Box>
     );
 }

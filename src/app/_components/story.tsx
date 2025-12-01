@@ -1,8 +1,19 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-
 import { api } from "~/trpc/react";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+  CircularProgress,
+  IconButton,
+  Container,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SendIcon from "@mui/icons-material/Send";
 
 type Message = {
   id: string;
@@ -31,12 +42,6 @@ export function Story({
     },
     onError: (error) => {
       console.error("Failed to generate image:", error);
-    },
-  });
-  const deleteStory = api.story.delete.useMutation({
-    onSuccess: async () => {
-      await utils.story.getAll.invalidate();
-      onSelectStory(null);
     },
   });
   const { data: existingStory, isLoading } = api.story.getById.useQuery(
@@ -69,7 +74,7 @@ export function Story({
     if (scrollRef.current && shouldScrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, generatedImage, createStory.isPending]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,162 +128,204 @@ export function Story({
     }
   };
 
-  const handleDelete = () => {
-    if (storyId) {
-      deleteStory.mutate({ id: storyId });
-    }
-  };
-
   return (
-    <div className="flex h-full w-full flex-col bg-white/5 md:p-4 md:shadow-xl md:ring-1 md:ring-white/10">
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        bgcolor: "background.paper",
+        borderRadius: { md: 2 },
+        overflow: "hidden",
+      }}
+    >
       {storyId && (
-        <div className="mb-4 flex items-center justify-between border-b border-white/10 p-4 md:px-0 md:pt-0 md:pb-4">
-          <h2 className="truncate text-lg font-semibold text-white">
-            {existingStory?.prompt}
-          </h2>
-          <button
-            onClick={handleDelete}
-            disabled={deleteStory.isPending}
-            className="rounded px-2 py-1 text-xs text-white/40 transition hover:bg-white/5 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
-            title="Delete story"
-          >
-            {deleteStory.isPending ? "⏳" : "🗑️"}
-          </button>
-        </div>
+        <Box
+          sx={{
+            display: "none", // Hidden as per request
+          }}
+        />
       )}
+
       {!storyId && messages.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center p-4">
-          <form onSubmit={handleSubmit} className="w-full max-w-2xl">
-            <div className="rounded-2xl border border-white/20 bg-white/5 p-6 shadow-2xl backdrop-blur-sm">
-              <h2 className="mb-4 text-center text-2xl font-bold text-white">
-                Start Your Story
-              </h2>
-              <p className="mb-6 text-center text-sm text-white/60">
-                Tell me what kind of story you would like to hear...
-              </p>
-              <textarea
+        <Container maxWidth="sm" sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: 4,
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              borderRadius: 4,
+            }}
+          >
+            <Typography variant="h4" align="center" fontWeight="bold">
+              Start Your Story
+            </Typography>
+            <Typography variant="body1" align="center" color="text.secondary">
+              Tell me what kind of story you would like to hear...
+            </Typography>
+            <form onSubmit={handleSubmit}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Once upon a time..."
-                rows={4}
-                className="mb-4 w-full resize-none rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 focus:outline-none"
+                variant="outlined"
+                sx={{ mb: 2 }}
                 autoFocus
               />
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={createStory.isPending || !input.trim()}
-                  className="rounded-xl bg-gradient-to-r from-purple-600 to-purple-500 px-8 py-3 font-semibold text-white shadow-lg transition hover:shadow-purple-500/50 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {createStory.isPending ? "Creating..." : "Create Story"}
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                disabled={createStory.isPending || !input.trim()}
+                endIcon={createStory.isPending ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+              >
+                {createStory.isPending ? "Creating..." : "Create Story"}
+              </Button>
+            </form>
+          </Paper>
+        </Container>
       ) : (
         <>
-          <div
+          <Box
             ref={scrollRef}
-            className="scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent flex-1 space-y-4 overflow-y-auto p-4"
+            sx={{
+              flex: 1,
+              overflowY: "auto",
+              p: 3,
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+            }}
           >
             {isLoading ? (
-              <div className="animate-pulse space-y-4">
-                <div className="flex justify-end">
-                  <div className="h-10 w-3/4 rounded-2xl bg-white/10"></div>
-                </div>
-                <div className="flex justify-start">
-                  <div className="h-32 w-3/4 rounded-2xl bg-white/10"></div>
-                </div>
-              </div>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Box sx={{ alignSelf: "flex-end", width: "70%", height: 40, bgcolor: "action.hover", borderRadius: 2 }} />
+                <Box sx={{ alignSelf: "flex-start", width: "70%", height: 120, bgcolor: "action.hover", borderRadius: 2 }} />
+              </Box>
             ) : (
               <>
                 {messages.map((msg) => (
-                  <div
+                  <Box
                     key={msg.id}
-                    className={`flex ${
-                      msg.role === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    sx={{
+                      display: "flex",
+                      justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
+                    }}
                   >
-                    <div
-                      className={`max-w-full rounded-2xl px-4 py-2 md:max-w-[80%] ${
-                        msg.role === "user"
-                          ? "bg-purple-600 text-white"
-                          : "bg-white/10 text-white"
-                      }`}
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        maxWidth: "80%",
+                        borderRadius: 2,
+                        bgcolor: msg.role === "user" ? "primary.main" : "action.hover",
+                        color: msg.role === "user" ? "primary.contrastText" : "text.primary",
+                      }}
                     >
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
-                    </div>
-                  </div>
+                      <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+                        {msg.content}
+                      </Typography>
+                    </Paper>
+                  </Box>
                 ))}
 
                 {/* Display generated image */}
                 {
                   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                   (generatedImage || generateImage.isPending) && (
-                    <div className="flex justify-start">
-                      <div className="max-w-full rounded-2xl bg-white/10 p-4 md:max-w-[80%]">
+                    <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: 2,
+                          maxWidth: "80%",
+                          borderRadius: 2,
+                          bgcolor: "action.hover",
+                        }}
+                      >
                         {generateImage.isPending ? (
-                          <div className="flex items-center gap-3 text-white">
-                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-500 border-t-transparent"></div>
-                            <span>Generating image...</span>
-                          </div>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                            <CircularProgress size={20} />
+                            <Typography>Generating image...</Typography>
+                          </Box>
                         ) : generatedImage ? (
-                          <img
+                          <Box
+                            component="img"
                             src={`data:image/png;base64,${generatedImage}`}
                             alt="Generated story illustration"
-                            className="h-auto w-full rounded-xl"
+                            sx={{ width: "100%", borderRadius: 1, height: "auto" }}
                           />
                         ) : null}
-                      </div>
-                    </div>
-                  )
-                }
+                      </Paper>
+                    </Box>
+                  )}
 
                 {createStory.isPending &&
                   messages[messages.length - 1]?.role === "user" && (
-                    <div className="flex justify-start">
-                      <div className="max-w-full rounded-2xl bg-white/10 px-4 py-2 text-white md:max-w-[80%]">
-                        <span className="animate-pulse">Thinking...</span>
-                      </div>
-                    </div>
+                    <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: 2,
+                          borderRadius: 2,
+                          bgcolor: "action.hover",
+                        }}
+                      >
+                        <Typography className="animate-pulse">Thinking...</Typography>
+                      </Paper>
+                    </Box>
                   )}
               </>
             )}
-          </div>
+          </Box>
 
           {!storyId && (
-            <form
+            <Box
+              component="form"
               onSubmit={handleSubmit}
-              className="border-t border-white/10 p-4 md:mt-4 md:px-0 md:pt-4 md:pb-0"
+              sx={{
+                p: 2,
+                borderTop: 1,
+                borderColor: "divider",
+                bgcolor: "background.paper",
+              }}
             >
-              <div className="flex gap-2">
-                <textarea
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <TextField
+                  fullWidth
+                  multiline
+                  maxRows={4}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Tell me a story about..."
-                  rows={1}
-                  className="flex-1 resize-none rounded-2xl bg-white/10 px-4 py-3 text-white placeholder-white/50 transition focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                  style={{ minHeight: "44px", maxHeight: "120px" }}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = "44px";
-                    target.style.height =
-                      Math.min(target.scrollHeight, 120) + "px";
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    }
                   }}
                 />
-                <button
+                <Button
                   type="submit"
+                  variant="contained"
                   disabled={createStory.isPending || !input.trim()}
-                  className="self-end rounded-2xl bg-purple-600 px-6 py-3 font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  sx={{ borderRadius: 2, minWidth: 80 }}
                 >
                   Send
-                </button>
-              </div>
-            </form>
+                </Button>
+              </Box>
+            </Box>
           )}
         </>
       )}
-    </div>
+    </Box>
   );
 }

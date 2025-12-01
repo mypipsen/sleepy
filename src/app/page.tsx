@@ -1,59 +1,109 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Box, Typography, Button, IconButton, AppBar, Toolbar, useTheme, useMediaQuery } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 
 import { Story } from "~/app/_components/story";
 import { Sidebar } from "~/app/_components/sidebar";
 
-export default function Home() {
+function HomeContent() {
   const { data: session } = useSession();
-  const [selectedStoryId, setSelectedStoryId] = useState<number | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Keep sidebar state local
+
+  const storyIdParam = searchParams.get("story");
+  const selectedStoryId = storyIdParam ? parseInt(storyIdParam, 10) : null;
+
+  const handleSelectStory = (id: number | null) => {
+    if (id) {
+      router.push(`/?story=${id}`);
+    } else {
+      router.push("/");
+    }
+    setIsSidebarOpen(false);
+  };
 
   if (!session) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            sl<span className="text-[hsl(280,100%,70%)]">ee</span>py
-          </h1>
-          <div className="flex flex-col items-center gap-2">
-            <Link
-              href="/api/auth/signin"
-              className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-            >
-              Sign in
-            </Link>
-          </div>
-        </div>
-      </main>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "linear-gradient(to bottom, #2e026d, #15162c)",
+          color: "white",
+          p: 4,
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+          <Typography variant="h1" fontWeight="800" sx={{ fontSize: { xs: "3rem", sm: "5rem" } }}>
+            sl<Box component="span" sx={{ color: "secondary.main" }}>ee</Box>py
+          </Typography>
+          <Button
+            component={Link}
+            href="/api/auth/signin"
+            variant="contained"
+            color="secondary"
+            size="large"
+            sx={{ borderRadius: 50, px: 5, py: 1.5, fontWeight: "bold" }}
+          >
+            Sign in
+          </Button>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <main className="flex h-screen flex-col md:flex-row bg-[#15162c] text-white">
-      {/* Mobile Header */}
-      <div className="flex items-center border-b border-white/10 p-4 md:hidden">
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          className="mr-4 rounded-lg p-2 text-white/70 hover:bg-white/10"
-        >
-          ☰
-        </button>
-        <span className="font-bold">Sleepy</span>
-      </div>
-
+    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden", bgcolor: "background.default" }}>
       <Sidebar
-        onSelectStory={setSelectedStoryId}
+        onSelectStory={handleSelectStory}
         selectedStoryId={selectedStoryId}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
-      <div className="flex-1 overflow-hidden md:p-4">
-        <Story storyId={selectedStoryId} onSelectStory={setSelectedStoryId} />
-      </div>
-    </main>
+
+      <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+        {isMobile && (
+          <AppBar position="static" color="transparent" elevation={0} sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Toolbar>
+              <IconButton
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                onClick={() => setIsSidebarOpen(true)}
+                sx={{ mr: 2 }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                Sleepy
+              </Typography>
+            </Toolbar>
+          </AppBar>
+        )}
+
+        <Box component="main" sx={{ flexGrow: 1, p: { xs: 0, md: 3 }, height: "100%", overflow: "hidden" }}>
+          <Story storyId={selectedStoryId} onSelectStory={handleSelectStory} />
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
