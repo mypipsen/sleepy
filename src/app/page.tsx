@@ -11,8 +11,6 @@ import {
   IconButton,
   AppBar,
   Toolbar,
-  useTheme,
-  useMediaQuery,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
@@ -23,9 +21,7 @@ function HomeContent() {
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Keep sidebar state local
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const storyIdParam = searchParams.get("story");
   const selectedStoryId = storyIdParam ? parseInt(storyIdParam, 10) : null;
@@ -64,7 +60,7 @@ function HomeContent() {
           <Typography
             variant="h1"
             fontWeight="800"
-            sx={{ fontSize: { xs: "3rem", sm: "5rem" } }}
+            sx={{ fontSize: "3rem" }}
           >
             sl
             <Box component="span" sx={{ color: "secondary.main" }}>
@@ -90,10 +86,10 @@ function HomeContent() {
   return (
     <Box
       sx={{
-        display: "flex",
-        height: "100vh",
-        overflow: "hidden",
+        minHeight: "100vh",
         bgcolor: "background.default",
+        maxWidth: "800px",
+        mx: "auto",
       }}
     >
       <Sidebar
@@ -103,49 +99,35 @@ function HomeContent() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <Box
+      <AppBar
+        position="sticky"
+        elevation={0}
         sx={{
-          flexGrow: 1,
-          display: "flex",
-          flexDirection: "column",
-          height: "100vh",
-          overflow: "hidden",
+          borderBottom: 1,
+          borderColor: "divider",
+          top: 0,
+          bgcolor: "background.default",
+          zIndex: 10,
         }}
       >
-        {isMobile && (
-          <AppBar
-            position="static"
-            color="transparent"
-            elevation={0}
-            sx={{ borderBottom: 1, borderColor: "divider" }}
+        <Toolbar>
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            onClick={() => setIsSidebarOpen(true)}
+            sx={{ mr: 2 }}
           >
-            <Toolbar>
-              <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                onClick={() => setIsSidebarOpen(true)}
-                sx={{ mr: 2 }}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                Sleepy
-              </Typography>
-            </Toolbar>
-          </AppBar>
-        )}
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Sleepy
+          </Typography>
+        </Toolbar>
+      </AppBar>
 
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            overflow: "auto",
-            p: { xs: 0, md: 3 },
-          }}
-        >
-          <Story storyId={selectedStoryId} onSelectStory={handleSelectStory} />
-        </Box>
+      <Box component="main">
+        <Story storyId={selectedStoryId} onSelectStory={handleSelectStory} />
       </Box>
     </Box>
   );

@@ -14,8 +14,6 @@ import {
   CircularProgress,
   AppBar,
   Toolbar,
-  useTheme,
-  useMediaQuery,
   Container,
   Skeleton,
 } from "@mui/material";
@@ -29,8 +27,6 @@ export default function InstructionsPage() {
   const [text, setText] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const { data: instruction, isLoading } = api.instruction.get.useQuery();
   const upsertMutation = api.instruction.upsert.useMutation();
@@ -74,10 +70,10 @@ export default function InstructionsPage() {
   return (
     <Box
       sx={{
-        display: "flex",
-        height: "100vh",
-        overflow: "hidden",
+        minHeight: "100vh",
         bgcolor: "background.default",
+        maxWidth: "600px",
+        mx: "auto",
       }}
     >
       <Sidebar
@@ -93,123 +89,113 @@ export default function InstructionsPage() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <Box
+      <AppBar
+        position="sticky"
+        elevation={0}
         sx={{
-          flexGrow: 1,
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-          overflow: "hidden",
+          borderBottom: 1,
+          borderColor: "divider",
+          top: 0,
+          bgcolor: "background.default",
+          zIndex: 10,
         }}
       >
-        {isMobile && (
-          <AppBar
-            position="static"
-            color="transparent"
-            elevation={0}
-            sx={{ borderBottom: 1, borderColor: "divider" }}
+        <Toolbar>
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            onClick={() => setIsSidebarOpen(true)}
+            sx={{ mr: 2 }}
           >
-            <Toolbar>
-              <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                onClick={() => setIsSidebarOpen(true)}
-                sx={{ mr: 2 }}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                Custom Instructions
-              </Typography>
-            </Toolbar>
-          </AppBar>
-        )}
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Custom Instructions
+          </Typography>
+        </Toolbar>
+      </AppBar>
 
-        <Box
-          component="main"
-          sx={{ flexGrow: 1, overflowY: "auto", p: { xs: 2, md: 4 } }}
-        >
-          <Container maxWidth="md">
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="h4" fontWeight="bold" gutterBottom>
-                Custom Instructions
-              </Typography>
-            </Box>
+      <Box component="main" sx={{ p: 2, pb: 4 }}>
+        <Container maxWidth="md">
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
+              Custom Instructions
+            </Typography>
+          </Box>
 
-            <Paper sx={{ p: 4, borderRadius: 2, bgcolor: "background.paper" }}>
-              <Typography variant="body2" color="text.secondary" paragraph>
-                Add custom instructions that the AI will consider when
-                generating stories. These instructions will be applied to all
-                future stories.
-              </Typography>
+          <Paper sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper" }}>
+            <Typography variant="body2" color="text.secondary" paragraph>
+              Add custom instructions that the AI will consider when
+              generating stories. These instructions will be applied to all
+              future stories.
+            </Typography>
 
-              {isLoading ? (
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <Skeleton
-                    variant="rounded"
-                    height={240}
-                    sx={{ borderRadius: 1 }}
-                  />
-                  <Skeleton
-                    variant="rounded"
-                    height={56}
-                    sx={{ borderRadius: 1 }}
-                  />
-                </Box>
-              ) : (
-                <>
-                  <TextField
+            {isLoading ? (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Skeleton
+                  variant="rounded"
+                  height={240}
+                  sx={{ borderRadius: 1 }}
+                />
+                <Skeleton
+                  variant="rounded"
+                  height={56}
+                  sx={{ borderRadius: 1 }}
+                />
+              </Box>
+            ) : (
+              <>
+                <TextField
+                  fullWidth
+                  multiline
+                  minRows={8}
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="e.g., Always include a friendly animal character, use simple language suitable for young children, etc."
+                  variant="outlined"
+                  sx={{ mb: 3 }}
+                />
+
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <Button
+                    onClick={handleSave}
+                    disabled={isSaving || !text.trim()}
+                    variant="contained"
+                    color="primary"
+                    size="large"
                     fullWidth
-                    multiline
-                    minRows={8}
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    placeholder="e.g., Always include a friendly animal character, use simple language suitable for young children, etc."
-                    variant="outlined"
-                    sx={{ mb: 3 }}
-                  />
+                    startIcon={
+                      isSaving ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : (
+                        <SaveIcon />
+                      )
+                    }
+                  >
+                    {isSaving ? "Saving..." : "Save Instructions"}
+                  </Button>
 
-                  <Box sx={{ display: "flex", gap: 2 }}>
-                    <Button
-                      onClick={handleSave}
-                      disabled={isSaving || !text.trim()}
-                      variant="contained"
-                      color="primary"
-                      size="large"
-                      fullWidth
-                      startIcon={
-                        isSaving ? (
-                          <CircularProgress size={20} color="inherit" />
-                        ) : (
-                          <SaveIcon />
-                        )
-                      }
+                  {instruction && (
+                    <IconButton
+                      onClick={handleDelete}
+                      disabled={isSaving}
+                      color="error"
+                      title="Delete instructions"
+                      sx={{
+                        borderRadius: 2,
+                        border: 1,
+                        borderColor: "divider",
+                      }}
                     >
-                      {isSaving ? "Saving..." : "Save Instructions"}
-                    </Button>
-
-                    {instruction && (
-                      <IconButton
-                        onClick={handleDelete}
-                        disabled={isSaving}
-                        color="error"
-                        title="Delete instructions"
-                        sx={{
-                          borderRadius: 2,
-                          border: 1,
-                          borderColor: "divider",
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    )}
-                  </Box>
-                </>
-              )}
-            </Paper>
-          </Container>
-        </Box>
+                      <DeleteIcon />
+                    </IconButton>
+                  )}
+                </Box>
+              </>
+            )}
+          </Paper>
+        </Container>
       </Box>
     </Box>
   );

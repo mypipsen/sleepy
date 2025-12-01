@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import {
   Box,
@@ -33,7 +33,6 @@ export function Story({
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isWaitingForImage, setIsWaitingForImage] = useState(false);
-  const shouldScrollRef = useRef(true);
 
   const createStory = api.story.create.useMutation();
   const { data: existingStory, isLoading } = api.story.getById.useQuery(
@@ -44,7 +43,6 @@ export function Story({
   // Load existing story
   useEffect(() => {
     if (storyId && existingStory) {
-      shouldScrollRef.current = false;
       setMessages([
         { id: "prompt", role: "user", content: existingStory.prompt ?? "" },
         {
@@ -64,7 +62,6 @@ export function Story({
     e.preventDefault();
     if (!input.trim() || isGenerating) return;
 
-    shouldScrollRef.current = true;
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: "user",
@@ -97,7 +94,6 @@ export function Story({
             ),
           );
         } else if (chunk.type === "storyId") {
-          // storyId = chunk.content;
           setIsWaitingForImage(true);
         } else if (chunk.type === "image") {
           setGeneratedImage(chunk.content);
@@ -109,7 +105,6 @@ export function Story({
       await utils.story.getAll.invalidate();
     } catch (error) {
       console.error("Failed to generate story:", error);
-      // Optionally handle error state in UI
     } finally {
       setIsGenerating(false);
       setIsWaitingForImage(false);
@@ -117,49 +112,33 @@ export function Story({
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        bgcolor: "background.paper",
-        borderRadius: { md: 2 },
-        overflow: "hidden",
-      }}
-    >
-      {storyId && (
-        <Box
-          sx={{
-            display: "none", // Hidden as per request
-          }}
-        />
-      )}
-
+    <Box sx={{ pb: 4 }}>
       {!storyId && messages.length === 0 ? (
         <Container
           maxWidth="sm"
           sx={{
-            flex: 1,
+            minHeight: "calc(100vh - 64px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            py: 4,
           }}
         >
           <Paper
             elevation={3}
             sx={{
-              p: 4,
+              p: 3,
               width: "100%",
               display: "flex",
               flexDirection: "column",
               gap: 2,
-              borderRadius: 4,
+              borderRadius: 3,
             }}
           >
-            <Typography variant="h4" align="center" fontWeight="bold">
+            <Typography variant="h5" align="center" fontWeight="bold">
               Start Your Story
             </Typography>
-            <Typography variant="body1" align="center" color="text.secondary">
+            <Typography variant="body2" align="center" color="text.secondary">
               Tell me what kind of story you would like to hear...
             </Typography>
             <form onSubmit={handleSubmit}>
@@ -194,16 +173,7 @@ export function Story({
           </Paper>
         </Container>
       ) : (
-        <Box
-          sx={{
-            flex: 1,
-            overflowY: "auto",
-            p: 3,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-          }}
-        >
+        <Box sx={{ p: 2 }}>
           {isLoading ? (
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Skeleton
@@ -218,7 +188,7 @@ export function Story({
               />
             </Box>
           ) : (
-            <>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {messages.map((msg) => (
                 <Box
                   key={msg.id}
@@ -232,7 +202,7 @@ export function Story({
                     elevation={0}
                     sx={{
                       p: 2,
-                      maxWidth: "80%",
+                      maxWidth: "85%",
                       borderRadius: 2,
                       bgcolor:
                         msg.role === "user" ? "primary.main" : "action.hover",
@@ -261,7 +231,7 @@ export function Story({
                       elevation={0}
                       sx={{
                         p: 2,
-                        maxWidth: "80%",
+                        maxWidth: "85%",
                         borderRadius: 2,
                         bgcolor: "action.hover",
                       }}
@@ -315,7 +285,7 @@ export function Story({
                     </Paper>
                   </Box>
                 )}
-            </>
+            </Box>
           )}
         </Box>
       )}

@@ -10,15 +10,12 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
-  ListItemIcon,
   Toolbar,
   Divider,
   Box,
   Typography,
   Avatar,
   Button,
-  useTheme,
-  useMediaQuery,
   IconButton,
   Dialog,
   DialogTitle,
@@ -50,8 +47,6 @@ export function Sidebar({
   const { data: stories, isLoading } = api.story.getAll.useQuery();
   const { data: session } = useSession();
   const router = useRouter();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [storyToDelete, setStoryToDelete] = useState<number | null>(null);
@@ -73,7 +68,7 @@ export function Sidebar({
 
   const handleInstructions = () => {
     router.push("/instructions");
-    if (isMobile) onClose();
+    onClose();
   };
 
   const handleDeleteClick = (e: React.MouseEvent, id: number) => {
@@ -88,125 +83,139 @@ export function Sidebar({
     }
   };
 
-  const drawerContent = (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <Toolbar sx={{ px: 2 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          startIcon={<AddIcon />}
-          onClick={() => {
-            onSelectStory(null);
-            if (isMobile) onClose();
-          }}
-        >
-          New Story
-        </Button>
-      </Toolbar>
-      <Divider />
-      <Box sx={{ flexGrow: 1, overflow: "auto" }}>
-        {isLoading ? (
-          <Typography
-            sx={{ p: 2, textAlign: "center", color: "text.secondary" }}
-          >
-            Loading...
-          </Typography>
-        ) : (
-          <List>
-            {stories?.map((story) => (
-              <ListItem
-                key={story.id}
-                disablePadding
-                secondaryAction={
-                  <IconButton
-                    edge="end"
-                    aria-label="delete"
-                    onClick={(e) => handleDeleteClick(e, story.id)}
-                    size="small"
-                    sx={{
-                      opacity: 0.6,
-                      "&:hover": { opacity: 1, color: "error.main" },
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                }
-              >
-                <ListItemButton
-                  selected={selectedStoryId === story.id}
-                  onClick={() => {
-                    onSelectStory(story.id);
-                    if (isMobile) onClose();
-                  }}
-                  sx={{ pr: 6 }} // Make room for secondary action
-                >
-                  <ListItemText
-                    primary={story.prompt}
-                    secondary={new Date(story.createdAt).toLocaleDateString()}
-                    primaryTypographyProps={{
-                      noWrap: true,
-                      variant: "body2",
-                      fontWeight:
-                        selectedStoryId === story.id ? "bold" : "medium",
-                    }}
-                    secondaryTypographyProps={{
-                      noWrap: true,
-                      variant: "caption",
-                    }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </Box>
-      <Divider />
-      <Box sx={{ p: 2 }}>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
-          <Avatar sx={{ bgcolor: "primary.main", width: 32, height: 32 }}>
-            {session?.user?.name?.[0]?.toUpperCase() ??
-              session?.user?.email?.[0]?.toUpperCase() ??
-              "U"}
-          </Avatar>
-          <Box sx={{ overflow: "hidden" }}>
-            <Typography variant="subtitle2" noWrap>
-              {session?.user?.name ?? session?.user?.email ?? "User"}
-            </Typography>
-            {session?.user?.name && session?.user?.email && (
+  return (
+    <>
+      <Drawer
+        variant="temporary"
+        open={isOpen}
+        onClose={onClose}
+        ModalProps={{
+          keepMounted: true,
+        }}
+        sx={{
+          "& .MuiDrawer-paper": {
+            boxSizing: "border-box",
+            width: drawerWidth,
+          },
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          <Toolbar sx={{ px: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              startIcon={<AddIcon />}
+              onClick={() => {
+                onSelectStory(null);
+                onClose();
+              }}
+            >
+              New Story
+            </Button>
+          </Toolbar>
+          <Divider />
+          <Box sx={{ flexGrow: 1, overflow: "auto" }}>
+            {isLoading ? (
               <Typography
-                variant="caption"
-                color="text.secondary"
-                noWrap
-                display="block"
+                sx={{ p: 2, textAlign: "center", color: "text.secondary" }}
               >
-                {session.user.email}
+                Loading...
               </Typography>
+            ) : (
+              <List>
+                {stories?.map((story) => (
+                  <ListItem
+                    key={story.id}
+                    disablePadding
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={(e) => handleDeleteClick(e, story.id)}
+                        size="small"
+                        sx={{
+                          opacity: 0.6,
+                          "&:hover": { opacity: 1, color: "error.main" },
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    }
+                  >
+                    <ListItemButton
+                      selected={selectedStoryId === story.id}
+                      onClick={() => {
+                        onSelectStory(story.id);
+                        onClose();
+                      }}
+                      sx={{ pr: 6 }}
+                    >
+                      <ListItemText
+                        primary={story.prompt}
+                        secondary={new Date(story.createdAt).toLocaleDateString()}
+                        primaryTypographyProps={{
+                          noWrap: true,
+                          variant: "body2",
+                          fontWeight:
+                            selectedStoryId === story.id ? "bold" : "medium",
+                        }}
+                        secondaryTypographyProps={{
+                          noWrap: true,
+                          variant: "caption",
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
             )}
           </Box>
+          <Divider />
+          <Box sx={{ p: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
+              <Avatar sx={{ bgcolor: "primary.main", width: 32, height: 32 }}>
+                {session?.user?.name?.[0]?.toUpperCase() ??
+                  session?.user?.email?.[0]?.toUpperCase() ??
+                  "U"}
+              </Avatar>
+              <Box sx={{ overflow: "hidden" }}>
+                <Typography variant="subtitle2" noWrap>
+                  {session?.user?.name ?? session?.user?.email ?? "User"}
+                </Typography>
+                {session?.user?.name && session?.user?.email && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    noWrap
+                    display="block"
+                  >
+                    {session.user.email}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Button
+                onClick={handleInstructions}
+                startIcon={<InfoIcon />}
+                fullWidth
+                sx={{ justifyContent: "flex-start" }}
+              >
+                Instructions
+              </Button>
+              <Button
+                onClick={handleLogout}
+                startIcon={<LogoutIcon />}
+                fullWidth
+                sx={{ justifyContent: "flex-start" }}
+              >
+                Logout
+              </Button>
+            </Box>
+          </Box>
         </Box>
-        <List disablePadding>
-          <ListItem disablePadding>
-            <ListItemButton
-              onClick={handleInstructions}
-              sx={{ borderRadius: 1 }}
-            >
-              <ListItemIcon sx={{ minWidth: 40 }}>
-                <InfoIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Instructions" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={handleLogout} sx={{ borderRadius: 1 }}>
-              <ListItemIcon sx={{ minWidth: 40 }}>
-                <LogoutIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Logout" />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Box>
+      </Drawer>
 
       {/* Delete Confirmation Dialog */}
       <Dialog
@@ -233,47 +242,6 @@ export function Sidebar({
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
-  );
-
-  return (
-    <Box
-      component="nav"
-      sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
-    >
-      {/* Mobile Drawer */}
-      <Drawer
-        variant="temporary"
-        open={isOpen}
-        onClose={onClose}
-        ModalProps={{
-          keepMounted: true, // Better open performance on mobile.
-        }}
-        sx={{
-          display: { xs: "block", md: "none" },
-          "& .MuiDrawer-paper": {
-            boxSizing: "border-box",
-            width: drawerWidth,
-          },
-        }}
-      >
-        {drawerContent}
-      </Drawer>
-
-      {/* Desktop Drawer */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          display: { xs: "none", md: "block" },
-          "& .MuiDrawer-paper": {
-            boxSizing: "border-box",
-            width: drawerWidth,
-          },
-        }}
-        open
-      >
-        {drawerContent}
-      </Drawer>
-    </Box>
+    </>
   );
 }
