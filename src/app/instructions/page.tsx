@@ -17,6 +17,7 @@ import {
   useTheme,
   useMediaQuery,
   Container,
+  Skeleton,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SaveIcon from "@mui/icons-material/Save";
@@ -145,21 +146,15 @@ export default function InstructionsPage() {
 
               {isLoading ? (
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <Box
-                    sx={{
-                      width: "100%",
-                      height: 200,
-                      bgcolor: "action.hover",
-                      borderRadius: 1,
-                    }}
+                  <Skeleton
+                    variant="rounded"
+                    height={240}
+                    sx={{ borderRadius: 1 }}
                   />
-                  <Box
-                    sx={{
-                      width: "100%",
-                      height: 48,
-                      bgcolor: "action.hover",
-                      borderRadius: 1,
-                    }}
+                  <Skeleton
+                    variant="rounded"
+                    height={56}
+                    sx={{ borderRadius: 1 }}
                   />
                 </Box>
               ) : (

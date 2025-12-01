@@ -10,6 +10,7 @@ import {
   Paper,
   CircularProgress,
   Container,
+  Skeleton,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 
@@ -215,23 +216,15 @@ export function Story({
           >
             {isLoading ? (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <Box
-                  sx={{
-                    alignSelf: "flex-end",
-                    width: "70%",
-                    height: 40,
-                    bgcolor: "action.hover",
-                    borderRadius: 2,
-                  }}
+                <Skeleton
+                  variant="rounded"
+                  height={40}
+                  sx={{ alignSelf: "flex-end", width: "70%" }}
                 />
-                <Box
-                  sx={{
-                    alignSelf: "flex-start",
-                    width: "70%",
-                    height: 120,
-                    bgcolor: "action.hover",
-                    borderRadius: 2,
-                  }}
+                <Skeleton
+                  variant="rounded"
+                  height={120}
+                  sx={{ alignSelf: "flex-start", width: "70%" }}
                 />
               </Box>
             ) : (

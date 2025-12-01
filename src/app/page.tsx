@@ -141,8 +141,9 @@ function HomeContent() {
           sx={{
             flexGrow: 1,
             p: { xs: 0, md: 3 },
-            height: "100%",
-            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
           }}
         >
           <Story storyId={selectedStoryId} onSelectStory={handleSelectStory} />
