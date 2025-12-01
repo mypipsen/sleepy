@@ -8,7 +8,7 @@ AI-powered story generation app for kids with customizable instructions and pers
 - **Auth**: NextAuth.js (credentials provider)
 - **Database**: PostgreSQL + Drizzle ORM
 - **API**: tRPC
-- **AI**: OpenAI (via AI SDK)
+- **AI**: OpenAI via AI SDK by Vercel
 - **Styling**: Tailwind CSS
 
 ## Setup
@@ -37,7 +37,7 @@ Configure `.env` with your OpenAI API key and database URL (see `.env.example`).
 - User authentication with username/password
 - AI story generation with custom user instructions
 - Story history per user
-- Kid-friendly pastel UI design
+- Image generation to illustrate story
 
 ## Scripts
 
