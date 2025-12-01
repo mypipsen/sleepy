@@ -108,7 +108,7 @@ function HomeContent() {
           flexGrow: 1,
           display: "flex",
           flexDirection: "column",
-          height: "100%",
+          height: "100vh",
           overflow: "hidden",
         }}
       >
@@ -140,10 +140,8 @@ function HomeContent() {
           component="main"
           sx={{
             flexGrow: 1,
+            overflow: "auto",
             p: { xs: 0, md: 3 },
-            display: "flex",
-            flexDirection: "column",
-            minHeight: 0,
           }}
         >
           <Story storyId={selectedStoryId} onSelectStory={handleSelectStory} />

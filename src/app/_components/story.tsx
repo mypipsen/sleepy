@@ -33,7 +33,6 @@ export function Story({
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isWaitingForImage, setIsWaitingForImage] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const shouldScrollRef = useRef(true);
 
   const createStory = api.story.create.useMutation();
@@ -60,13 +59,6 @@ export function Story({
       setGeneratedImage(null);
     }
   }, [storyId, existingStory]);
-
-  // Auto-scroll to bottom
-  useEffect(() => {
-    if (scrollRef.current && shouldScrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, generatedImage, createStory.isPending]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,133 +194,130 @@ export function Story({
           </Paper>
         </Container>
       ) : (
-        <>
-          <Box
-            ref={scrollRef}
-            sx={{
-              flex: 1,
-              overflowY: "auto",
-              p: 3,
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-            }}
-          >
-            {isLoading ? (
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <Skeleton
-                  variant="rounded"
-                  height={40}
-                  sx={{ alignSelf: "flex-end", width: "70%" }}
-                />
-                <Skeleton
-                  variant="rounded"
-                  height={120}
-                  sx={{ alignSelf: "flex-start", width: "70%" }}
-                />
-              </Box>
-            ) : (
-              <>
-                {messages.map((msg) => (
-                  <Box
-                    key={msg.id}
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: "auto",
+            p: 3,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          {isLoading ? (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Skeleton
+                variant="rounded"
+                height={40}
+                sx={{ alignSelf: "flex-end", width: "70%" }}
+              />
+              <Skeleton
+                variant="rounded"
+                height={120}
+                sx={{ alignSelf: "flex-start", width: "70%" }}
+              />
+            </Box>
+          ) : (
+            <>
+              {messages.map((msg) => (
+                <Box
+                  key={msg.id}
+                  sx={{
+                    display: "flex",
+                    justifyContent:
+                      msg.role === "user" ? "flex-end" : "flex-start",
+                  }}
+                >
+                  <Paper
+                    elevation={0}
                     sx={{
-                      display: "flex",
-                      justifyContent:
-                        msg.role === "user" ? "flex-end" : "flex-start",
+                      p: 2,
+                      maxWidth: "80%",
+                      borderRadius: 2,
+                      bgcolor:
+                        msg.role === "user" ? "primary.main" : "action.hover",
+                      color:
+                        msg.role === "user"
+                          ? "primary.contrastText"
+                          : "text.primary",
                     }}
                   >
+                    <Typography
+                      variant="body1"
+                      sx={{ whiteSpace: "pre-wrap" }}
+                    >
+                      {msg.content}
+                    </Typography>
+                  </Paper>
+                </Box>
+              ))}
+
+              {/* Display generated image */}
+              {
+                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                (generatedImage || isWaitingForImage) && (
+                  <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
                     <Paper
                       elevation={0}
                       sx={{
                         p: 2,
                         maxWidth: "80%",
                         borderRadius: 2,
-                        bgcolor:
-                          msg.role === "user" ? "primary.main" : "action.hover",
-                        color:
-                          msg.role === "user"
-                            ? "primary.contrastText"
-                            : "text.primary",
+                        bgcolor: "action.hover",
                       }}
                     >
-                      <Typography
-                        variant="body1"
-                        sx={{ whiteSpace: "pre-wrap" }}
-                      >
-                        {msg.content}
+                      {isWaitingForImage ? (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+                          }}
+                        >
+                          <CircularProgress size={20} />
+                          <Typography>Generating image...</Typography>
+                        </Box>
+                      ) : (
+                        <Box
+                          component="img"
+                          src={
+                            generatedImage?.startsWith("http")
+                              ? generatedImage
+                              : `data:image/png;base64,${generatedImage}`
+                          }
+                          alt="Generated story illustration"
+                          sx={{
+                            width: "100%",
+                            borderRadius: 1,
+                            height: "auto",
+                          }}
+                        />
+                      )}
+                    </Paper>
+                  </Box>
+                )
+              }
+
+              {createStory.isPending &&
+                messages[messages.length - 1]?.role === "user" && (
+                  <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: "action.hover",
+                      }}
+                    >
+                      <Typography className="animate-pulse">
+                        Thinking...
                       </Typography>
                     </Paper>
                   </Box>
-                ))}
-
-                {/* Display generated image */}
-                {
-                  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                  (generatedImage || isWaitingForImage) && (
-                    <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
-                      <Paper
-                        elevation={0}
-                        sx={{
-                          p: 2,
-                          maxWidth: "80%",
-                          borderRadius: 2,
-                          bgcolor: "action.hover",
-                        }}
-                      >
-                        {isWaitingForImage ? (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 2,
-                            }}
-                          >
-                            <CircularProgress size={20} />
-                            <Typography>Generating image...</Typography>
-                          </Box>
-                        ) : (
-                          <Box
-                            component="img"
-                            src={
-                              generatedImage?.startsWith("http")
-                                ? generatedImage
-                                : `data:image/png;base64,${generatedImage}`
-                            }
-                            alt="Generated story illustration"
-                            sx={{
-                              width: "100%",
-                              borderRadius: 1,
-                              height: "auto",
-                            }}
-                          />
-                        )}
-                      </Paper>
-                    </Box>
-                  )
-                }
-
-                {createStory.isPending &&
-                  messages[messages.length - 1]?.role === "user" && (
-                    <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
-                      <Paper
-                        elevation={0}
-                        sx={{
-                          p: 2,
-                          borderRadius: 2,
-                          bgcolor: "action.hover",
-                        }}
-                      >
-                        <Typography className="animate-pulse">
-                          Thinking...
-                        </Typography>
-                      </Paper>
-                    </Box>
-                  )}
-              </>
-            )}
-          </Box>
-        </>
+                )}
+            </>
+          )}
+        </Box>
       )}
     </Box>
   );

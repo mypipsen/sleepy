@@ -48,7 +48,7 @@ export const storyRouter = createTRPCRouter({
       const { image } = await generateImage({
         model: openai.image("dall-e-3"),
         prompt: getImagePrompt(text),
-        size: "1024x1024",
+        size: "1024x1792",
       });
 
       yield { type: "image" as const, content: image.base64 };
