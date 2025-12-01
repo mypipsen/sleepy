@@ -1,21 +1,18 @@
-export function getImagePrompt(story: string, instruction: string) {
-  return `You are an illustrator creating a cozy, magical, and child-friendly image that represents the following story:
+export function getImagePrompt(story: string) {
+  return `Create a friendly illustration for a childrens bedtime story. The image should feel soft, warm, and comforting, with gentle lighting and rounded shapes. Nothing scary or intense. It should visually match the main characters, setting, and mood of the story.
 
+Story for visual guidance:
+\`\`\`
 ${story}
-
-Follow these instructions:
-
-1. Capture the main scene or moment that best reflects the story’s mood.
-2. Include the main characters described in the story.
-3. Use a warm, soft, and gentle color palette suitable for children.
-4. Avoid anything scary, dark, or intense.
-
-[USER'S FREE TEXT INSTRUCTIONS/PROMPT HERE]
-\`\`\`
-${instruction}
 \`\`\`
 
----
+Art style guidelines:
+- Modern cartoon style similar to Paw Patrol and other popular kids TV shows today
+- Bright but soothing colors
+- Simple clean character designs with big expressive eyes
+- Soft edges and smooth shading
+- Calm and happy expressions
+- A cozy feeling that supports bedtime
 
-Output a single illustration that could accompany this story as a bedtime picture.`;
+Do not include text in the image. Focus on a single scene that represents the heart of the story and feels magical and peaceful.`;
 }

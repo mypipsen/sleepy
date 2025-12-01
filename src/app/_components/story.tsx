@@ -32,18 +32,12 @@ export function Story({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isWaitingForImage, setIsWaitingForImage] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const shouldScrollRef = useRef(true);
 
   const createStory = api.story.create.useMutation();
-  const generateImage = api.image.create.useMutation({
-    onSuccess: (imageBase64) => {
-      setGeneratedImage(imageBase64);
-    },
-    onError: (error) => {
-      console.error("Failed to generate image:", error);
-    },
-  });
   const { data: existingStory, isLoading } = api.story.getById.useQuery(
     { id: storyId! },
     { enabled: !!storyId },
@@ -78,7 +72,7 @@ export function Story({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || createStory.isPending) return;
+    if (!input.trim() || isGenerating) return;
 
     shouldScrollRef.current = true;
     const userMessage: Message = {
@@ -94,12 +88,14 @@ export function Story({
       { id: assistantMessageId, role: "assistant", content: "" },
     ]);
     setInput("");
+    setGeneratedImage(null);
+    setIsGenerating(true);
+    setIsWaitingForImage(false);
 
     try {
       const result = await createStory.mutateAsync({
         prompt: userMessage.content,
       });
-      let storyId: number | null = null;
 
       for await (const chunk of result) {
         if (chunk.type === "text") {
@@ -111,20 +107,22 @@ export function Story({
             ),
           );
         } else if (chunk.type === "storyId") {
-          storyId = chunk.content;
+          // storyId = chunk.content;
+          setIsWaitingForImage(true);
+        } else if (chunk.type === "image") {
+          setGeneratedImage(chunk.content);
+          setIsWaitingForImage(false);
         }
       }
 
       // Refresh the sidebar history
       await utils.story.getAll.invalidate();
-
-      // Trigger image generation if we have a story ID
-      if (storyId) {
-        generateImage.mutate({ storyId });
-      }
     } catch (error) {
       console.error("Failed to generate story:", error);
       // Optionally handle error state in UI
+    } finally {
+      setIsGenerating(false);
+      setIsWaitingForImage(false);
     }
   };
 
@@ -183,10 +181,10 @@ export function Story({
                 fullWidth
                 variant="contained"
                 size="large"
-                disabled={createStory.isPending || !input.trim()}
-                endIcon={createStory.isPending ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+                disabled={isGenerating || !input.trim()}
+                endIcon={isGenerating ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
               >
-                {createStory.isPending ? "Creating..." : "Create Story"}
+                {isGenerating ? "Creating..." : "Create Story"}
               </Button>
             </form>
           </Paper>
@@ -239,7 +237,7 @@ export function Story({
                 {/* Display generated image */}
                 {
                   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                  (generatedImage || generateImage.isPending) && (
+                  (generatedImage || isWaitingForImage) && (
                     <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
                       <Paper
                         elevation={0}
@@ -250,19 +248,19 @@ export function Story({
                           bgcolor: "action.hover",
                         }}
                       >
-                        {generateImage.isPending ? (
+                        {isWaitingForImage ? (
                           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                             <CircularProgress size={20} />
                             <Typography>Generating image...</Typography>
                           </Box>
-                        ) : generatedImage ? (
+                        ) : (
                           <Box
                             component="img"
                             src={`data:image/png;base64,${generatedImage}`}
                             alt="Generated story illustration"
                             sx={{ width: "100%", borderRadius: 1, height: "auto" }}
                           />
-                        ) : null}
+                        )}
                       </Paper>
                     </Box>
                   )}
@@ -316,7 +314,7 @@ export function Story({
                 <Button
                   type="submit"
                   variant="contained"
-                  disabled={createStory.isPending || !input.trim()}
+                  disabled={isGenerating || !input.trim()}
                   sx={{ borderRadius: 2, minWidth: 80 }}
                 >
                   Send

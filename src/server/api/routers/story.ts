@@ -1,5 +1,6 @@
 import { openai } from "@ai-sdk/openai";
-import { streamText } from "ai";
+import { streamText, experimental_generateImage as generateImage } from "ai";
+import { getImagePrompt } from "~/server/prompts/image-prompt";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 
@@ -38,6 +39,14 @@ export const storyRouter = createTRPCRouter({
         .returning();
 
       yield { type: "storyId" as const, content: story!.id };
+
+      const { image } = await generateImage({
+        model: openai.image("dall-e-3"),
+        prompt: getImagePrompt(text),
+        size: "1024x1024",
+      });
+
+      yield { type: "image" as const, content: image.base64 };
     }),
 
   getAll: protectedProcedure.query(async ({ ctx }) => {
