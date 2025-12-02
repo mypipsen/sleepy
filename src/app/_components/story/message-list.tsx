@@ -23,7 +23,7 @@ export function MessageList({
   isLoading,
   isPending,
 }: MessageListProps) {
-  if (isLoading) {
+  if (isLoading && messages.length === 0) {
     return <MessageLoadingSkeleton />;
   }
 

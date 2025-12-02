@@ -69,7 +69,6 @@ export function Story({ storyId }: StoryProps) {
     setGeneratedImage(null);
     setTitle("");
     setIsGenerating(true);
-    setIsWaitingForImage(false);
 
     try {
       const result = await createStory.mutateAsync({
@@ -89,6 +88,8 @@ export function Story({ storyId }: StoryProps) {
           setTitle(chunk.content);
         } else if (chunk.type === "storyId") {
           setIsWaitingForImage(true);
+          // Update URL without reloading
+          window.history.pushState({}, "", `/?story=${chunk.content}`);
         } else if (chunk.type === "image") {
           setGeneratedImage(chunk.content);
           setIsWaitingForImage(false);
