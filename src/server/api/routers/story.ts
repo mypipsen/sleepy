@@ -1,43 +1,25 @@
-import { openai } from "@ai-sdk/openai";
-import { put } from "@vercel/blob";
-import { streamObject, experimental_generateImage as generateImage } from "ai";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { stories, instructions } from "~/server/db/schema";
-import { getStoryPrompt } from "~/server/prompts/story-prompt";
-import { getImagePrompt } from "~/server/prompts/image-prompt";
-
-const storySchema = z.object({
-  title: z.string().describe("A title for the story"),
-  text: z.string().describe("The full story text"),
-  imageInstructions: z
-    .string()
-    .describe("Instructions for generating an image that fits the story"),
-});
+import { stories } from "~/server/db/schema";
+import { createImage } from "~/server/services/image";
+import { streamStory } from "~/server/services/story";
 
 export const storyRouter = createTRPCRouter({
   create: protectedProcedure
     .input(z.object({ prompt: z.string().min(1) }))
     .mutation(async function* ({ ctx, input }) {
-      const instruction = await ctx.db.query.instructions.findFirst({
-        where: eq(instructions.userId, ctx.session.user.id),
-      });
-
-      const result = streamObject({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-        model: openai("gpt-4.1") as any,
+      const stream = await streamStory({
+        userId: ctx.session.user.id,
         prompt: input.prompt,
-        system: getStoryPrompt(String(instruction?.text)),
-        schema: storySchema,
       });
 
       let text = "";
       let title = "";
       let imageInstructions = "";
 
-      for await (const partialObject of result.partialObjectStream) {
+      for await (const partialObject of stream.partialObjectStream) {
         if (partialObject.text !== undefined) {
           const newText = partialObject.text.slice(text.length);
           text = partialObject.text;
@@ -71,28 +53,11 @@ export const storyRouter = createTRPCRouter({
 
       yield { type: "storyId" as const, content: story.id };
 
-      const { image } = await generateImage({
-        model: openai.image("dall-e-3"),
-        prompt: getImagePrompt(imageInstructions),
-        size: "1024x1024",
-      });
+      const image = await createImage(story);
 
-      yield { type: "image" as const, content: image.base64 };
-
-      const { url } = await put(
-        `images/story-${story.id}`,
-        Buffer.from(image.base64, "base64"),
-        {
-          contentType: image.mediaType,
-          access: "public",
-          addRandomSuffix: true,
-        },
-      );
-
-      await ctx.db
-        .update(stories)
-        .set({ imageUrl: url })
-        .where(eq(stories.id, story.id));
+      if (image) {
+        yield { type: "image" as const, content: image.base64 };
+      }
     }),
 
   getAll: protectedProcedure.query(async ({ ctx }) => {
