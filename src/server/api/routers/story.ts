@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { stories } from "~/server/db/schema";
 import { createImage } from "~/server/services/image";
+// import { createVideo } from "~/server/services/video";
 import { streamStory } from "~/server/services/story";
 
 export const storyRouter = createTRPCRouter({
@@ -53,11 +54,17 @@ export const storyRouter = createTRPCRouter({
 
       yield { type: "storyId" as const, content: story.id };
 
-      const image = await createImage(story);
-
-      if (image) {
-        yield { type: "image" as const, content: image.base64 };
+      const imageUrl = await createImage(story);
+      if (imageUrl) {
+        yield { type: "image" as const, content: imageUrl };
       }
+
+      /*
+      const videoUrl = await createVideo(story);
+      if (videoUrl) {
+        yield { type: "video" as const, content: videoUrl };
+      }
+      */
     }),
 
   getAll: protectedProcedure.query(async ({ ctx }) => {

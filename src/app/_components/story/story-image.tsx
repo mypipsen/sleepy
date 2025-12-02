@@ -34,14 +34,10 @@ export function StoryImage({ imageUrl, isLoading }: StoryImageProps) {
             <CircularProgress size={20} />
             <Typography>Generating image...</Typography>
           </Box>
-        ) : (
+        ) : typeof imageUrl === "string" ? (
           <Box
             component="img"
-            src={
-              imageUrl?.startsWith("http")
-                ? imageUrl
-                : `data:image/png;base64,${imageUrl}`
-            }
+            src={imageUrl}
             alt="Generated story illustration"
             sx={{
               width: "100%",
@@ -49,7 +45,7 @@ export function StoryImage({ imageUrl, isLoading }: StoryImageProps) {
               height: "auto",
             }}
           />
-        )}
+        ) : null}
       </Paper>
     </Box>
   );

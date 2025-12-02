@@ -51,5 +51,5 @@ export async function createImage(story: typeof stories.$inferSelect) {
     .set({ imageUrl: url })
     .where(eq(stories.id, story.id));
 
-  return image;
+  return url;
 }

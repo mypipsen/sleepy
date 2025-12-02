@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1764535609339,
-      "tag": "0000_condemned_doctor_strange",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1764540827536,
-      "tag": "0001_flaky_dexter_bennett",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1764620759542,
-      "tag": "0002_steady_invisible_woman",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1764689649558,
-      "tag": "0003_wooden_stepford_cuckoos",
+      "when": 1764713777298,
+      "tag": "0000_moaning_mephisto",
       "breakpoints": true
     }
   ]
