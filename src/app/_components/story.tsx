@@ -15,10 +15,9 @@ type Message = {
 
 type StoryProps = {
   storyId: number | null;
-  onSelectStory: (id: number | null) => void;
 };
 
-export function Story({ storyId, onSelectStory }: StoryProps) {
+export function Story({ storyId }: StoryProps) {
   const utils = api.useUtils();
   const [messages, setMessages] = useState<Message[]>([]);
   const [title, setTitle] = useState<string>("");

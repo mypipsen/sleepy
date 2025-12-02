@@ -48,13 +48,10 @@ function HomeContent() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <AppHeader
-        title="Sleepy"
-        onMenuClick={() => setIsSidebarOpen(true)}
-      />
+      <AppHeader title="Sleepy" onMenuClick={() => setIsSidebarOpen(true)} />
 
       <Box component="main">
-        <Story storyId={selectedStoryId} onSelectStory={handleSelectStory} />
+        <Story storyId={selectedStoryId} />
       </Box>
     </Box>
   );

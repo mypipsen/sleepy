@@ -12,7 +12,9 @@ import { getImagePrompt } from "~/server/prompts/image-prompt";
 const storySchema = z.object({
   title: z.string().describe("A title for the story"),
   text: z.string().describe("The full story text"),
-  imageInstructions: z.string().describe("Instructions for generating an image that fits the story"),
+  imageInstructions: z
+    .string()
+    .describe("Instructions for generating an image that fits the story"),
 });
 
 export const storyRouter = createTRPCRouter({

@@ -7,12 +7,7 @@ import { Sidebar } from "~/app/_components/sidebar";
 import { AppHeader } from "~/app/_components/shared/app-header";
 import { FormLoadingSkeleton } from "~/app/_components/shared/loading-skeleton";
 import { InstructionsForm } from "./instructions-form";
-import {
-  Box,
-  Typography,
-  Paper,
-  Container,
-} from "@mui/material";
+import { Box, Typography, Paper, Container } from "@mui/material";
 
 export default function InstructionsPage() {
   const router = useRouter();
@@ -72,9 +67,8 @@ export default function InstructionsPage() {
 
           <Paper sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper" }}>
             <Typography variant="body2" color="text.secondary" paragraph>
-              Add custom instructions that the AI will consider when
-              generating stories. These instructions will be applied to all
-              future stories.
+              Add custom instructions that the AI will consider when generating
+              stories. These instructions will be applied to all future stories.
             </Typography>
 
             {isLoading ? (

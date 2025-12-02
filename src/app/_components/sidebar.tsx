@@ -4,13 +4,7 @@ import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
-import {
-  Drawer,
-  Toolbar,
-  Divider,
-  Box,
-  Button,
-} from "@mui/material";
+import { Drawer, Toolbar, Divider, Box, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import InfoIcon from "@mui/icons-material/Info";
 import LogoutIcon from "@mui/icons-material/Logout";
