@@ -27,7 +27,7 @@ export const storyRouter = createTRPCRouter({
 
       const result = streamObject({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-        model: openai("gpt-4.1-nano") as any,
+        model: openai("gpt-4.1") as any,
         prompt: input.prompt,
         system: getStoryPrompt(String(instruction?.text)),
         schema: storySchema,
