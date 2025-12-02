@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { stories } from "~/server/db/schema";
 import { createImage } from "~/server/services/image";
-// import { createVideo } from "~/server/services/video";
+import { streamVideo } from "~/server/services/video";
 import { streamStory } from "~/server/services/story";
 
 export const storyRouter = createTRPCRouter({
@@ -59,12 +59,14 @@ export const storyRouter = createTRPCRouter({
         yield { type: "image" as const, content: imageUrl };
       }
 
-      /*
-      const videoUrl = await createVideo(story);
-      if (videoUrl) {
-        yield { type: "video" as const, content: videoUrl };
+      const videoStream = streamVideo(story);
+      for await (const chunk of videoStream) {
+        if (chunk.type === "progress") {
+          yield { type: "videoProgress" as const, content: chunk.progress };
+        } else if (chunk.type === "video") {
+          yield { type: "video" as const, content: chunk.url };
+        }
       }
-      */
     }),
 
   getAll: protectedProcedure.query(async ({ ctx }) => {

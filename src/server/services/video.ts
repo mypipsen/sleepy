@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { db } from "~/server/db/index";
 import { stories } from "~/server/db/schema";
 
-export async function createVideo(story: typeof stories.$inferSelect) {
+export async function* streamVideo(story: typeof stories.$inferSelect) {
   if (!story.imageInstructions) {
     return;
   }
@@ -24,28 +24,15 @@ export async function createVideo(story: typeof stories.$inferSelect) {
     video = await openai.videos.retrieve(video.id);
     progress = video.progress ?? 0;
 
-    // Display progress bar
-    const barLength = 30;
-    const filledLength = Math.floor((progress / 100) * barLength);
-    // Simple ASCII progress visualization for terminal output
-    const bar = "=".repeat(filledLength) + "-".repeat(barLength - filledLength);
-    const statusText = video.status === "queued" ? "Queued" : "Processing";
-
-    console.log(`${statusText}: [${bar}] ${progress.toFixed(1)}%`);
+    yield { type: "progress" as const, progress };
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
   }
 
-  // Clear the progress line and show completion
-  console.log("\n");
-
   if (video.status === "failed") {
     console.error("Video generation failed");
+    return;
   }
-
-  console.log("Video generation completed: ", video);
-
-  console.log("Downloading video content...");
 
   const content = await openai.videos.downloadContent(video.id);
 
@@ -63,5 +50,5 @@ export async function createVideo(story: typeof stories.$inferSelect) {
     .set({ videoUrl: url })
     .where(eq(stories.id, story.id));
 
-  return url;
+  yield { type: "video" as const, url };
 }
