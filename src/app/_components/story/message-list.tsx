@@ -12,12 +12,14 @@ type MessageType = {
 
 type MessageListProps = {
     messages: MessageType[];
+    title?: string;
     isLoading: boolean;
     isPending: boolean;
 };
 
 export function MessageList({
     messages,
+    title,
     isLoading,
     isPending,
 }: MessageListProps) {
@@ -28,7 +30,11 @@ export function MessageList({
     return (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {messages.map((msg) => (
-                <Message key={msg.id} message={msg} />
+                <Message
+                    key={msg.id}
+                    message={msg}
+                    title={msg.role === "assistant" ? title : undefined}
+                />
             ))}
 
             {isPending && messages[messages.length - 1]?.role === "user" && (

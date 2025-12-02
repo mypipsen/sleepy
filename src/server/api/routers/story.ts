@@ -1,6 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { put } from "@vercel/blob";
-import { streamText, experimental_generateImage as generateImage } from "ai";
+import { streamObject, experimental_generateImage as generateImage } from "ai";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -8,6 +8,12 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { stories, instructions } from "~/server/db/schema";
 import { getStoryPrompt } from "~/server/prompts/story-prompt";
 import { getImagePrompt } from "~/server/prompts/image-prompt";
+
+const storySchema = z.object({
+  title: z.string().describe("A title for the story"),
+  text: z.string().describe("The full story text"),
+  imageInstructions: z.string().describe("Instructions for generating an image that fits the story"),
+});
 
 export const storyRouter = createTRPCRouter({
   create: protectedProcedure
@@ -17,24 +23,42 @@ export const storyRouter = createTRPCRouter({
         where: eq(instructions.userId, ctx.session.user.id),
       });
 
-      const result = streamText({
+      const result = streamObject({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
         model: openai("gpt-4.1-nano") as any,
         prompt: input.prompt,
         system: getStoryPrompt(String(instruction?.text)),
+        schema: storySchema,
       });
 
       let text = "";
-      for await (const textPart of result.textStream) {
-        text += textPart;
-        yield { type: "text" as const, content: textPart };
+      let title = "";
+      let imageInstructions = "";
+
+      for await (const partialObject of result.partialObjectStream) {
+        if (partialObject.text !== undefined) {
+          const newText = partialObject.text.slice(text.length);
+          text = partialObject.text;
+          if (newText) {
+            yield { type: "text" as const, content: newText };
+          }
+        }
+        if (partialObject.title !== undefined) {
+          title = partialObject.title;
+          yield { type: "title" as const, content: title };
+        }
+        if (partialObject.imageInstructions !== undefined) {
+          imageInstructions = partialObject.imageInstructions;
+        }
       }
 
       const [story] = await ctx.db
         .insert(stories)
         .values({
           prompt: input.prompt,
+          title,
           text,
+          imageInstructions,
           userId: ctx.session.user.id,
         })
         .returning();
@@ -47,8 +71,8 @@ export const storyRouter = createTRPCRouter({
 
       const { image } = await generateImage({
         model: openai.image("dall-e-3"),
-        prompt: getImagePrompt(text),
-        size: "1024x1792",
+        prompt: getImagePrompt(imageInstructions),
+        size: "1024x1024",
       });
 
       yield { type: "image" as const, content: image.base64 };

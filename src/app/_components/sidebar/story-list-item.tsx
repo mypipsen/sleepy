@@ -5,7 +5,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 type Story = {
     id: number;
-    prompt: string | null;
+    title: string | null;
     createdAt: Date;
 };
 
@@ -42,7 +42,7 @@ export function StoryListItem({
         >
             <ListItemButton selected={isSelected} onClick={onSelect} sx={{ pr: 6 }}>
                 <ListItemText
-                    primary={story.prompt ?? "Untitled"}
+                    primary={story.title ?? "Untitled"}
                     secondary={new Date(story.createdAt).toLocaleDateString()}
                     primaryTypographyProps={{
                         noWrap: true,

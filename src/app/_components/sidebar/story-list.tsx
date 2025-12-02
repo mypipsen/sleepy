@@ -5,7 +5,7 @@ import { StoryListItem } from "./story-list-item";
 
 type Story = {
     id: number;
-    prompt: string | null;
+    title: string | null;
     createdAt: Date;
 };
 

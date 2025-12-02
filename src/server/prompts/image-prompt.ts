@@ -1,9 +1,9 @@
-export function getImagePrompt(story: string) {
+export function getImagePrompt(imageInstructions: string) {
   return `Create a friendly illustration for a childrens bedtime story. The image should feel soft, warm, and comforting, with gentle lighting and rounded shapes. Nothing scary or intense. It should visually match the main characters, setting, and mood of the story.
 
-Story for visual guidance:
+Instructions for generating an image that fits the specific story:
 \`\`\`
-${story}
+${imageInstructions}
 \`\`\`
 
 Art style guidelines:

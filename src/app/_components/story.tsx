@@ -21,6 +21,7 @@ type StoryProps = {
 export function Story({ storyId, onSelectStory }: StoryProps) {
   const utils = api.useUtils();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [title, setTitle] = useState<string>("");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isWaitingForImage, setIsWaitingForImage] = useState(false);
@@ -43,9 +44,11 @@ export function Story({ storyId, onSelectStory }: StoryProps) {
         },
       ]);
       setGeneratedImage(existingStory.imageUrl ?? null);
+      setTitle(existingStory.title ?? "");
     } else if (!storyId) {
       setMessages([]);
       setGeneratedImage(null);
+      setTitle("");
     }
   }, [storyId, existingStory]);
 
@@ -65,6 +68,7 @@ export function Story({ storyId, onSelectStory }: StoryProps) {
       { id: assistantMessageId, role: "assistant", content: "" },
     ]);
     setGeneratedImage(null);
+    setTitle("");
     setIsGenerating(true);
     setIsWaitingForImage(false);
 
@@ -82,6 +86,8 @@ export function Story({ storyId, onSelectStory }: StoryProps) {
                 : msg,
             ),
           );
+        } else if (chunk.type === "title") {
+          setTitle(chunk.content);
         } else if (chunk.type === "storyId") {
           setIsWaitingForImage(true);
         } else if (chunk.type === "image") {
@@ -110,6 +116,7 @@ export function Story({ storyId, onSelectStory }: StoryProps) {
     <Box sx={{ p: 2, pb: 4 }}>
       <MessageList
         messages={messages}
+        title={title}
         isLoading={isLoading}
         isPending={createStory.isPending}
       />
