@@ -52,10 +52,7 @@ export default function InstructionsPage() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <AppHeader
-        title="Custom Instructions"
-        onMenuClick={() => setIsSidebarOpen(true)}
-      />
+      <AppHeader onMenuClick={() => setIsSidebarOpen(true)} />
 
       <Box component="main" sx={{ p: 2, pb: 4 }}>
         <Container maxWidth="md">

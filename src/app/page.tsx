@@ -48,7 +48,7 @@ function HomeContent() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <AppHeader title="Sleepy" onMenuClick={() => setIsSidebarOpen(true)} />
+      <AppHeader onMenuClick={() => setIsSidebarOpen(true)} />
 
       <Box component="main">
         <Story storyId={selectedStoryId} />

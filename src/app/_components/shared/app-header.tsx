@@ -1,14 +1,13 @@
 "use client";
 
-import { AppBar, Toolbar, IconButton, Typography } from "@mui/material";
+import { AppBar, Toolbar, IconButton, Typography, Box } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
 type AppHeaderProps = {
-  title: string;
   onMenuClick: () => void;
 };
 
-export function AppHeader({ title, onMenuClick }: AppHeaderProps) {
+export function AppHeader({ onMenuClick }: AppHeaderProps) {
   return (
     <AppBar
       position="sticky"
@@ -32,8 +31,16 @@ export function AppHeader({ title, onMenuClick }: AppHeaderProps) {
           <MenuIcon />
         </IconButton>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          {title}
+          Sleepy
         </Typography>
+        <Box
+          component="img"
+          src="logo.png"
+          sx={{
+            width: "45px",
+            height: "auto",
+          }}
+        />
       </Toolbar>
     </AppBar>
   );
