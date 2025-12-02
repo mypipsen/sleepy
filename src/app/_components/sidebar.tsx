@@ -6,36 +6,26 @@ import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import {
   Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
   Toolbar,
   Divider,
   Box,
-  Typography,
-  Avatar,
   Button,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import InfoIcon from "@mui/icons-material/Info";
 import LogoutIcon from "@mui/icons-material/Logout";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { StoryList } from "./sidebar/story-list";
+import { UserProfile } from "./sidebar/user-profile";
+import { DeleteDialog } from "./sidebar/delete-dialog";
 
 const drawerWidth = 280;
 
-interface SidebarProps {
+type SidebarProps = {
   onSelectStory: (id: number | null) => void;
   selectedStoryId: number | null;
   isOpen: boolean;
   onClose: () => void;
-}
+};
 
 export function Sidebar({
   onSelectStory,
@@ -71,8 +61,7 @@ export function Sidebar({
     onClose();
   };
 
-  const handleDeleteClick = (e: React.MouseEvent, id: number) => {
-    e.stopPropagation();
+  const handleDeleteClick = (id: number) => {
     setStoryToDelete(id);
     setDeleteDialogOpen(true);
   };
@@ -116,85 +105,20 @@ export function Sidebar({
           </Toolbar>
           <Divider />
           <Box sx={{ flexGrow: 1, overflow: "auto" }}>
-            {isLoading ? (
-              <Typography
-                sx={{ p: 2, textAlign: "center", color: "text.secondary" }}
-              >
-                Loading...
-              </Typography>
-            ) : (
-              <List>
-                {stories?.map((story) => (
-                  <ListItem
-                    key={story.id}
-                    disablePadding
-                    secondaryAction={
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={(e) => handleDeleteClick(e, story.id)}
-                        size="small"
-                        sx={{
-                          opacity: 0.6,
-                          "&:hover": { opacity: 1, color: "error.main" },
-                        }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    }
-                  >
-                    <ListItemButton
-                      selected={selectedStoryId === story.id}
-                      onClick={() => {
-                        onSelectStory(story.id);
-                        onClose();
-                      }}
-                      sx={{ pr: 6 }}
-                    >
-                      <ListItemText
-                        primary={story.prompt}
-                        secondary={new Date(story.createdAt).toLocaleDateString()}
-                        primaryTypographyProps={{
-                          noWrap: true,
-                          variant: "body2",
-                          fontWeight:
-                            selectedStoryId === story.id ? "bold" : "medium",
-                        }}
-                        secondaryTypographyProps={{
-                          noWrap: true,
-                          variant: "caption",
-                        }}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            )}
+            <StoryList
+              stories={stories}
+              selectedId={selectedStoryId}
+              onSelect={(id) => {
+                onSelectStory(id);
+                onClose();
+              }}
+              onDelete={handleDeleteClick}
+              isLoading={isLoading}
+            />
           </Box>
           <Divider />
           <Box sx={{ p: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
-              <Avatar sx={{ bgcolor: "primary.main", width: 32, height: 32 }}>
-                {session?.user?.name?.[0]?.toUpperCase() ??
-                  session?.user?.email?.[0]?.toUpperCase() ??
-                  "U"}
-              </Avatar>
-              <Box sx={{ overflow: "hidden" }}>
-                <Typography variant="subtitle2" noWrap>
-                  {session?.user?.name ?? session?.user?.email ?? "User"}
-                </Typography>
-                {session?.user?.name && session?.user?.email && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    noWrap
-                    display="block"
-                  >
-                    {session.user.email}
-                  </Typography>
-                )}
-              </Box>
-            </Box>
+            <UserProfile user={session?.user} />
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
               <Button
                 onClick={handleInstructions}
@@ -217,31 +141,11 @@ export function Sidebar({
         </Box>
       </Drawer>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
+      <DeleteDialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"Delete this story?"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete this story? This action cannot be
-            undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={confirmDelete} color="error" autoFocus>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={confirmDelete}
+      />
     </>
   );
 }

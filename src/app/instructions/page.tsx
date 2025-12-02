@@ -1,70 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { Sidebar } from "~/app/_components/sidebar";
+import { AppHeader } from "~/app/_components/shared/app-header";
+import { FormLoadingSkeleton } from "~/app/_components/shared/loading-skeleton";
+import { InstructionsForm } from "./instructions-form";
 import {
   Box,
   Typography,
-  TextField,
-  Button,
   Paper,
-  IconButton,
-  CircularProgress,
-  AppBar,
-  Toolbar,
   Container,
-  Skeleton,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import SaveIcon from "@mui/icons-material/Save";
-import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function InstructionsPage() {
   const router = useRouter();
   const utils = api.useUtils();
-  const [text, setText] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { data: instruction, isLoading } = api.instruction.get.useQuery();
   const upsertMutation = api.instruction.upsert.useMutation();
   const deleteMutation = api.instruction.delete.useMutation();
 
-  useEffect(() => {
-    if (instruction?.text) {
-      setText(instruction.text);
-    }
-  }, [instruction]);
-
-  const handleSave = async () => {
-    if (!text.trim()) return;
-
-    setIsSaving(true);
-    try {
-      await upsertMutation.mutateAsync({ text });
-      await utils.instruction.get.invalidate();
-      router.push("/");
-    } catch (error) {
-      console.error("Failed to save instructions:", error);
-    } finally {
-      setIsSaving(false);
-    }
+  const handleSave = async (text: string) => {
+    await upsertMutation.mutateAsync({ text });
+    await utils.instruction.get.invalidate();
+    router.push("/");
   };
 
   const handleDelete = async () => {
-    setIsSaving(true);
-    try {
-      await deleteMutation.mutateAsync();
-      await utils.instruction.get.invalidate();
-      setText("");
-      router.push("/");
-    } catch (error) {
-      console.error("Failed to delete instructions:", error);
-    } finally {
-      setIsSaving(false);
-    }
+    await deleteMutation.mutateAsync();
+    await utils.instruction.get.invalidate();
+    router.push("/");
   };
 
   return (
@@ -89,32 +57,10 @@ export default function InstructionsPage() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <AppBar
-        position="sticky"
-        elevation={0}
-        sx={{
-          borderBottom: 1,
-          borderColor: "divider",
-          top: 0,
-          bgcolor: "background.default",
-          zIndex: 10,
-        }}
-      >
-        <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            onClick={() => setIsSidebarOpen(true)}
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Custom Instructions
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <AppHeader
+        title="Custom Instructions"
+        onMenuClick={() => setIsSidebarOpen(true)}
+      />
 
       <Box component="main" sx={{ p: 2, pb: 4 }}>
         <Container maxWidth="md">
@@ -132,67 +78,14 @@ export default function InstructionsPage() {
             </Typography>
 
             {isLoading ? (
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <Skeleton
-                  variant="rounded"
-                  height={240}
-                  sx={{ borderRadius: 1 }}
-                />
-                <Skeleton
-                  variant="rounded"
-                  height={56}
-                  sx={{ borderRadius: 1 }}
-                />
-              </Box>
+              <FormLoadingSkeleton />
             ) : (
-              <>
-                <TextField
-                  fullWidth
-                  multiline
-                  minRows={8}
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  placeholder="e.g., Always include a friendly animal character, use simple language suitable for young children, etc."
-                  variant="outlined"
-                  sx={{ mb: 3 }}
-                />
-
-                <Box sx={{ display: "flex", gap: 2 }}>
-                  <Button
-                    onClick={handleSave}
-                    disabled={isSaving || !text.trim()}
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    fullWidth
-                    startIcon={
-                      isSaving ? (
-                        <CircularProgress size={20} color="inherit" />
-                      ) : (
-                        <SaveIcon />
-                      )
-                    }
-                  >
-                    {isSaving ? "Saving..." : "Save Instructions"}
-                  </Button>
-
-                  {instruction && (
-                    <IconButton
-                      onClick={handleDelete}
-                      disabled={isSaving}
-                      color="error"
-                      title="Delete instructions"
-                      sx={{
-                        borderRadius: 2,
-                        border: 1,
-                        borderColor: "divider",
-                      }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  )}
-                </Box>
-              </>
+              <InstructionsForm
+                instruction={instruction}
+                isLoading={isLoading}
+                onSave={handleSave}
+                onDelete={handleDelete}
+              />
             )}
           </Paper>
         </Container>

@@ -1,18 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Box } from "@mui/material";
 import { api } from "~/trpc/react";
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Paper,
-  CircularProgress,
-  Container,
-  Skeleton,
-} from "@mui/material";
-import SendIcon from "@mui/icons-material/Send";
+import { StoryInput } from "./story/story-input";
+import { MessageList } from "./story/message-list";
+import { StoryImage } from "./story/story-image";
 
 type Message = {
   id: string;
@@ -20,16 +13,14 @@ type Message = {
   content: string;
 };
 
-export function Story({
-  storyId,
-  onSelectStory,
-}: {
+type StoryProps = {
   storyId: number | null;
   onSelectStory: (id: number | null) => void;
-}) {
+};
+
+export function Story({ storyId, onSelectStory }: StoryProps) {
   const utils = api.useUtils();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isWaitingForImage, setIsWaitingForImage] = useState(false);
@@ -58,14 +49,13 @@ export function Story({
     }
   }, [storyId, existingStory]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isGenerating) return;
+  const handleSubmit = async (prompt: string) => {
+    if (isGenerating) return;
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: "user",
-      content: input,
+      content: prompt,
     };
 
     // Clear previous messages and start new conversation
@@ -74,7 +64,6 @@ export function Story({
       userMessage,
       { id: assistantMessageId, role: "assistant", content: "" },
     ]);
-    setInput("");
     setGeneratedImage(null);
     setIsGenerating(true);
     setIsWaitingForImage(false);
@@ -111,184 +100,22 @@ export function Story({
     }
   };
 
+  // Show input form for new stories
+  if (!storyId && messages.length === 0) {
+    return <StoryInput onSubmit={handleSubmit} isGenerating={isGenerating} />;
+  }
+
+  // Show messages for existing or generating stories
   return (
-    <Box sx={{ pb: 4 }}>
-      {!storyId && messages.length === 0 ? (
-        <Container
-          maxWidth="sm"
-          sx={{
-            minHeight: "calc(100vh - 64px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            py: 4,
-          }}
-        >
-          <Paper
-            elevation={3}
-            sx={{
-              p: 3,
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              borderRadius: 3,
-            }}
-          >
-            <Typography variant="h5" align="center" fontWeight="bold">
-              Start Your Story
-            </Typography>
-            <Typography variant="body2" align="center" color="text.secondary">
-              Tell me what kind of story you would like to hear...
-            </Typography>
-            <form onSubmit={handleSubmit}>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Once upon a time..."
-                variant="outlined"
-                sx={{ mb: 2 }}
-                autoFocus
-              />
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                size="large"
-                disabled={isGenerating || !input.trim()}
-                endIcon={
-                  isGenerating ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    <SendIcon />
-                  )
-                }
-              >
-                {isGenerating ? "Creating..." : "Create Story"}
-              </Button>
-            </form>
-          </Paper>
-        </Container>
-      ) : (
-        <Box sx={{ p: 2 }}>
-          {isLoading ? (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <Skeleton
-                variant="rounded"
-                height={40}
-                sx={{ alignSelf: "flex-end", width: "70%" }}
-              />
-              <Skeleton
-                variant="rounded"
-                height={120}
-                sx={{ alignSelf: "flex-start", width: "70%" }}
-              />
-            </Box>
-          ) : (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {messages.map((msg) => (
-                <Box
-                  key={msg.id}
-                  sx={{
-                    display: "flex",
-                    justifyContent:
-                      msg.role === "user" ? "flex-end" : "flex-start",
-                  }}
-                >
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 2,
-                      maxWidth: "85%",
-                      borderRadius: 2,
-                      bgcolor:
-                        msg.role === "user" ? "primary.main" : "action.hover",
-                      color:
-                        msg.role === "user"
-                          ? "primary.contrastText"
-                          : "text.primary",
-                    }}
-                  >
-                    <Typography
-                      variant="body1"
-                      sx={{ whiteSpace: "pre-wrap" }}
-                    >
-                      {msg.content}
-                    </Typography>
-                  </Paper>
-                </Box>
-              ))}
-
-              {/* Display generated image */}
-              {
-                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                (generatedImage || isWaitingForImage) && (
-                  <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        maxWidth: "85%",
-                        borderRadius: 2,
-                        bgcolor: "action.hover",
-                      }}
-                    >
-                      {isWaitingForImage ? (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 2,
-                          }}
-                        >
-                          <CircularProgress size={20} />
-                          <Typography>Generating image...</Typography>
-                        </Box>
-                      ) : (
-                        <Box
-                          component="img"
-                          src={
-                            generatedImage?.startsWith("http")
-                              ? generatedImage
-                              : `data:image/png;base64,${generatedImage}`
-                          }
-                          alt="Generated story illustration"
-                          sx={{
-                            width: "100%",
-                            borderRadius: 1,
-                            height: "auto",
-                          }}
-                        />
-                      )}
-                    </Paper>
-                  </Box>
-                )
-              }
-
-              {createStory.isPending &&
-                messages[messages.length - 1]?.role === "user" && (
-                  <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        borderRadius: 2,
-                        bgcolor: "action.hover",
-                      }}
-                    >
-                      <Typography className="animate-pulse">
-                        Thinking...
-                      </Typography>
-                    </Paper>
-                  </Box>
-                )}
-            </Box>
-          )}
-        </Box>
-      )}
+    <Box sx={{ p: 2, pb: 4 }}>
+      <MessageList
+        messages={messages}
+        isLoading={isLoading}
+        isPending={createStory.isPending}
+      />
+      <Box sx={{ mt: 2 }}>
+        <StoryImage imageUrl={generatedImage} isLoading={isWaitingForImage} />
+      </Box>
     </Box>
   );
 }
