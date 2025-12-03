@@ -96,7 +96,6 @@ export const stories = pgTable(
     title: d.text(),
     imageInstructions: d.text(),
     imageUrl: d.text(),
-    videoUrl: d.text(),
     userId: d
       .varchar({ length: 255 })
       .notNull()

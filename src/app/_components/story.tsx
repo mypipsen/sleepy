@@ -6,7 +6,6 @@ import { api } from "~/trpc/react";
 import { StoryInput } from "./story/story-input";
 import { MessageList } from "./story/message-list";
 import { StoryImage } from "./story/story-image";
-import { StoryVideo } from "./story/story-video";
 
 type Message = {
   id: string;
@@ -23,8 +22,6 @@ export function Story({ storyId }: StoryProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [title, setTitle] = useState<string>("");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [videoProgress, setVideoProgress] = useState<number | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isWaitingForImage, setIsWaitingForImage] = useState(false);
 
@@ -46,13 +43,10 @@ export function Story({ storyId }: StoryProps) {
         },
       ]);
       setGeneratedImage(existingStory.imageUrl ?? null);
-      setVideoUrl(existingStory.videoUrl ?? null);
       setTitle(existingStory.title ?? "");
     } else if (!storyId) {
       setMessages([]);
       setGeneratedImage(null);
-      setVideoUrl(null);
-      setVideoProgress(null);
       setTitle("");
     }
   }, [storyId, existingStory]);
@@ -73,8 +67,6 @@ export function Story({ storyId }: StoryProps) {
       { id: assistantMessageId, role: "assistant", content: "" },
     ]);
     setGeneratedImage(null);
-    setVideoUrl(null);
-    setVideoProgress(null);
     setTitle("");
     setIsGenerating(true);
 
@@ -101,11 +93,6 @@ export function Story({ storyId }: StoryProps) {
         } else if (chunk.type === "image") {
           setGeneratedImage(chunk.content);
           setIsWaitingForImage(false);
-        } else if (chunk.type === "videoProgress") {
-          setVideoProgress(chunk.content);
-        } else if (chunk.type === "video") {
-          setVideoUrl(chunk.content);
-          setVideoProgress(null);
         }
       }
 
@@ -135,9 +122,6 @@ export function Story({ storyId }: StoryProps) {
       />
       <Box sx={{ mt: 2 }}>
         <StoryImage imageUrl={generatedImage} isLoading={isWaitingForImage} />
-      </Box>
-      <Box sx={{ mt: 2 }}>
-        <StoryVideo videoUrl={videoUrl} progress={videoProgress} />
       </Box>
     </Box>
   );

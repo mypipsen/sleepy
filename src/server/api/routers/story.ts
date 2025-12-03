@@ -4,7 +4,6 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { stories } from "~/server/db/schema";
 import { createImage } from "~/server/services/image";
-import { streamVideo } from "~/server/services/video";
 import { streamStory } from "~/server/services/story";
 
 export const storyRouter = createTRPCRouter({
@@ -57,15 +56,6 @@ export const storyRouter = createTRPCRouter({
       const imageUrl = await createImage(story);
       if (imageUrl) {
         yield { type: "image" as const, content: imageUrl };
-      }
-
-      const videoStream = streamVideo(story);
-      for await (const chunk of videoStream) {
-        if (chunk.type === "progress") {
-          yield { type: "videoProgress" as const, content: chunk.progress };
-        } else if (chunk.type === "video") {
-          yield { type: "video" as const, content: chunk.url };
-        }
       }
     }),
 
