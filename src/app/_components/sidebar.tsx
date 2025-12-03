@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
@@ -46,25 +46,33 @@ export function Sidebar({
     },
   });
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await signOut({ callbackUrl: "/" });
-  };
+  }, []);
 
-  const handleInstructions = () => {
+  const handleInstructions = useCallback(() => {
     router.push("/instructions");
     onClose();
-  };
+  }, [router, onClose]);
 
-  const handleDeleteClick = (id: number) => {
+  const handleDeleteClick = useCallback((id: number) => {
     setStoryToDelete(id);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const confirmDelete = () => {
+  const handleSelectStory = useCallback(
+    (id: number) => {
+      onSelectStory(id);
+      onClose();
+    },
+    [onSelectStory, onClose],
+  );
+
+  const confirmDelete = useCallback(() => {
     if (storyToDelete) {
       deleteStory.mutate({ id: storyToDelete });
     }
-  };
+  }, [storyToDelete, deleteStory]);
 
   return (
     <>
@@ -102,10 +110,7 @@ export function Sidebar({
             <StoryList
               stories={stories}
               selectedId={selectedStoryId}
-              onSelect={(id) => {
-                onSelectStory(id);
-                onClose();
-              }}
+              onSelect={handleSelectStory}
               onDelete={handleDeleteClick}
               isLoading={isLoading}
             />

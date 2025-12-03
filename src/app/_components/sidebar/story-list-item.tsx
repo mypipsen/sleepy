@@ -7,15 +7,10 @@ import {
   IconButton,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-
-type Story = {
-  id: number;
-  title: string | null;
-  createdAt: Date;
-};
+import type { RouterOutputs } from "~/trpc/react";
 
 type StoryListItemProps = {
-  story: Story;
+  story: RouterOutputs["story"]["getAll"][number];
   isSelected: boolean;
   onSelect: () => void;
   onDelete: (e: React.MouseEvent) => void;

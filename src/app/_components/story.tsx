@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Box } from "@mui/material";
 import { api } from "~/trpc/react";
 import { StoryInput } from "./story/story-input";
@@ -20,9 +20,8 @@ type StoryProps = {
 export function Story({ storyId }: StoryProps) {
   const utils = api.useUtils();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [title, setTitle] = useState<string>("");
+  const [title, setTitle] = useState("");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isWaitingForImage, setIsWaitingForImage] = useState(false);
 
   const createStory = api.story.create.useMutation();
@@ -51,64 +50,70 @@ export function Story({ storyId }: StoryProps) {
     }
   }, [storyId, existingStory]);
 
-  const handleSubmit = async (prompt: string) => {
-    if (isGenerating) return;
+  const handleSubmit = useCallback(
+    async (prompt: string) => {
+      if (createStory.isPending) return;
 
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: prompt,
-    };
+      const userMessage: Message = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: prompt,
+      };
 
-    // Clear previous messages and start new conversation
-    const assistantMessageId = crypto.randomUUID();
-    setMessages([
-      userMessage,
-      { id: assistantMessageId, role: "assistant", content: "" },
-    ]);
-    setGeneratedImage(null);
-    setTitle("");
-    setIsGenerating(true);
+      // Clear previous messages and start new conversation
+      const assistantMessageId = crypto.randomUUID();
+      setMessages([
+        userMessage,
+        { id: assistantMessageId, role: "assistant", content: "" },
+      ]);
+      setGeneratedImage(null);
+      setTitle("");
 
-    try {
-      const result = await createStory.mutateAsync({
-        prompt: userMessage.content,
-      });
+      try {
+        const result = await createStory.mutateAsync({
+          prompt: userMessage.content,
+        });
 
-      for await (const chunk of result) {
-        if (chunk.type === "text") {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessageId
-                ? { ...msg, content: msg.content + chunk.content }
-                : msg,
-            ),
-          );
-        } else if (chunk.type === "title") {
-          setTitle(chunk.content);
-        } else if (chunk.type === "storyId") {
-          setIsWaitingForImage(true);
-          // Update URL without reloading
-          window.history.pushState({}, "", `/?story=${chunk.content}`);
-        } else if (chunk.type === "image") {
-          setGeneratedImage(chunk.content);
-          setIsWaitingForImage(false);
+        for await (const chunk of result) {
+          if (chunk.type === "text") {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: msg.content + chunk.content }
+                  : msg,
+              ),
+            );
+          } else if (chunk.type === "title") {
+            setTitle(chunk.content);
+          } else if (chunk.type === "storyId") {
+            setIsWaitingForImage(true);
+            // Update URL without reloading
+            window.history.pushState({}, "", `/?story=${chunk.content}`);
+          } else if (chunk.type === "image") {
+            setGeneratedImage(chunk.content);
+            setIsWaitingForImage(false);
+          }
         }
-      }
 
-      // Refresh the sidebar history
-      await utils.story.getAll.invalidate();
-    } catch (error) {
-      console.error("Failed to generate story:", error);
-    } finally {
-      setIsGenerating(false);
-      setIsWaitingForImage(false);
-    }
-  };
+        // Refresh the sidebar history
+        await utils.story.getAll.invalidate();
+      } catch (error) {
+        console.error("Failed to generate story:", error);
+      } finally {
+        setIsWaitingForImage(false);
+      }
+    },
+    [createStory, utils],
+  );
 
   // Show input form for new stories
   if (!storyId && messages.length === 0) {
-    return <StoryInput onSubmit={handleSubmit} isGenerating={isGenerating} />;
+    return (
+      <StoryInput
+        onSubmit={handleSubmit}
+        isGenerating={createStory.isPending}
+      />
+    );
   }
 
   // Show messages for existing or generating stories

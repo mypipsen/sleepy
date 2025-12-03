@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Box } from "@mui/material";
@@ -19,14 +19,17 @@ function HomeContent() {
   const storyIdParam = searchParams.get("story");
   const selectedStoryId = storyIdParam ? parseInt(storyIdParam, 10) : null;
 
-  const handleSelectStory = (id: number | null) => {
-    if (id) {
-      router.push(`/?story=${id}`);
-    } else {
-      router.push("/");
-    }
-    setIsSidebarOpen(false);
-  };
+  const handleSelectStory = useCallback(
+    (id: number | null) => {
+      if (id) {
+        router.push(`/?story=${id}`);
+      } else {
+        router.push("/");
+      }
+      setIsSidebarOpen(false);
+    },
+    [router],
+  );
 
   if (!session) {
     return <UnauthenticatedView />;

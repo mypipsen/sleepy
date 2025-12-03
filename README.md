@@ -35,9 +35,12 @@ Configure `.env` with your OpenAI API key and database URL (see `.env.example`).
 ## Key Features
 
 - User authentication with username/password
-- AI story generation with custom user instructions
-- Story history per user
-- Image generation to illustrate story
+- AI story generation with streaming responses
+- Voice transcription for story prompts
+- Custom user instructions for personalized story generation
+- Custom image instructions for tailored illustrations
+- Story history per user with persistent storage
+- AI-generated images to illustrate stories
 
 ## Scripts
 

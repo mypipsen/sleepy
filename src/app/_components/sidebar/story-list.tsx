@@ -2,15 +2,10 @@
 
 import { List, Typography } from "@mui/material";
 import { StoryListItem } from "./story-list-item";
-
-type Story = {
-  id: number;
-  title: string | null;
-  createdAt: Date;
-};
+import type { RouterOutputs } from "~/trpc/react";
 
 type StoryListProps = {
-  stories: Story[] | undefined;
+  stories: RouterOutputs["story"]["getAll"] | undefined;
   selectedId: number | null;
   onSelect: (id: number) => void;
   onDelete: (id: number) => void;

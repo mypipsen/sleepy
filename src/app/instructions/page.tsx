@@ -73,7 +73,6 @@ export default function InstructionsPage() {
             ) : (
               <InstructionsForm
                 instruction={instruction}
-                isLoading={isLoading}
                 onSave={handleSave}
                 onDelete={handleDelete}
               />

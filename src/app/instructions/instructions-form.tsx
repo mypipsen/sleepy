@@ -5,23 +5,16 @@ import { Box, TextField, Button, CircularProgress } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { IconButton } from "@mui/material";
-
-type Instruction = {
-  id: number;
-  text: string | null;
-  imageText: string | null;
-};
+import type { RouterOutputs } from "~/trpc/react";
 
 type InstructionsFormProps = {
-  instruction: Instruction | null | undefined;
-  isLoading: boolean;
+  instruction: RouterOutputs["instruction"]["get"] | undefined;
   onSave: (text: string, imageText: string) => Promise<void>;
   onDelete: () => Promise<void>;
 };
 
 export function InstructionsForm({
   instruction,
-  isLoading,
   onSave,
   onDelete,
 }: InstructionsFormProps) {
@@ -53,10 +46,6 @@ export function InstructionsForm({
       setIsSaving(false);
     }
   };
-
-  if (isLoading) {
-    return null; // Loading handled by parent
-  }
 
   return (
     <>
