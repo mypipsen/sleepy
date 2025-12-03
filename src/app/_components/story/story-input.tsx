@@ -8,8 +8,10 @@ import {
   TextField,
   Button,
   CircularProgress,
+  Box,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
+import { VoiceRecorder } from "./voice-recorder";
 
 type StoryInputProps = {
   onSubmit: (prompt: string) => void;
@@ -66,22 +68,28 @@ export function StoryInput({ onSubmit, isGenerating }: StoryInputProps) {
             sx={{ mb: 2 }}
             autoFocus
           />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            size="large"
-            disabled={isGenerating || !input.trim()}
-            endIcon={
-              isGenerating ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                <SendIcon />
-              )
-            }
-          >
-            {isGenerating ? "Creating..." : "Create Story"}
-          </Button>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <VoiceRecorder
+              onTranscribe={(text) => setInput(text)}
+              disabled={isGenerating}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              size="large"
+              disabled={isGenerating || !input.trim()}
+              endIcon={
+                isGenerating ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <SendIcon />
+                )
+              }
+            >
+              {isGenerating ? "Creating..." : "Create Story"}
+            </Button>
+          </Box>
         </form>
       </Paper>
     </Container>
