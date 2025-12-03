@@ -23,10 +23,10 @@ ${instruction?.imageText}
 \`\`\`
 
 Art style guidelines:
-- Modern cartoon style similar to Paw Patrol and other popular kids TV shows today
-- Simple clean character designs with big expressive eyes
-- Soft edges and smooth shading
-- A cozy feeling that supports bedtime
+- Modern cartoon style similar to Paw Patrol and other popular kids TV shows today.
+- Simple clean character designs with big expressive eyes.
+- Soft edges and smooth shading.
+- A cozy feeling that supports bedtime.
 
 Do not include text in the image. Focus on a single scene that represents the heart of the story and feels magical and peaceful.`;
 }
@@ -45,7 +45,7 @@ export async function createImage({
   const { image } = await generateImage({
     model: openai.image("dall-e-3"),
     prompt: getPrompt(story.imagePrompt, instruction),
-    size: "1024x1792",
+    size: "1024x1024",
   });
 
   const { url } = await put(
