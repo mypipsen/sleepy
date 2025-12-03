@@ -11,7 +11,9 @@ const storySchema = z.object({
   text: z.string().describe("The full story text"),
   imageInstructions: z
     .string()
-    .describe("Instructions for generating an image that fits the story"),
+    .describe(
+      "Instructions for generating an image that fits the story. Always write these instructions in English. Describe the main characters visually and set the scenario.",
+    ),
 });
 
 function getSystemPrompt(instruction?: string | null) {
