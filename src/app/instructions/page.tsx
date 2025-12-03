@@ -18,8 +18,8 @@ export default function InstructionsPage() {
   const upsertMutation = api.instruction.upsert.useMutation();
   const deleteMutation = api.instruction.delete.useMutation();
 
-  const handleSave = async (text: string) => {
-    await upsertMutation.mutateAsync({ text });
+  const handleSave = async (text: string, imageText: string) => {
+    await upsertMutation.mutateAsync({ text, imageText });
     await utils.instruction.get.invalidate();
     router.push("/");
   };

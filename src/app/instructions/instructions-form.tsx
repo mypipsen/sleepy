@@ -9,12 +9,13 @@ import { IconButton } from "@mui/material";
 type Instruction = {
   id: number;
   text: string | null;
+  imageText: string | null;
 };
 
 type InstructionsFormProps = {
   instruction: Instruction | null | undefined;
   isLoading: boolean;
-  onSave: (text: string) => Promise<void>;
+  onSave: (text: string, imageText: string) => Promise<void>;
   onDelete: () => Promise<void>;
 };
 
@@ -25,21 +26,18 @@ export function InstructionsForm({
   onDelete,
 }: InstructionsFormProps) {
   const [text, setText] = useState("");
+  const [imageText, setImageText] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (instruction?.text) {
-      setText(instruction.text);
-    } else {
-      setText("");
-    }
+    setText(instruction?.text ?? "");
+    setImageText(instruction?.imageText ?? "");
   }, [instruction]);
 
   const handleSave = async () => {
-    if (!text.trim()) return;
     setIsSaving(true);
     try {
-      await onSave(text);
+      await onSave(text, imageText);
     } finally {
       setIsSaving(false);
     }
@@ -50,6 +48,7 @@ export function InstructionsForm({
     try {
       await onDelete();
       setText("");
+      setImageText("");
     } finally {
       setIsSaving(false);
     }
@@ -68,6 +67,17 @@ export function InstructionsForm({
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="e.g., Always include a friendly animal character, use simple language suitable for young children, etc."
+        variant="outlined"
+        sx={{ mb: 3 }}
+      />
+
+      <TextField
+        fullWidth
+        multiline
+        minRows={8}
+        value={imageText}
+        onChange={(e) => setImageText(e.target.value)}
+        placeholder="e.g., Kids listening to the story are ages 5 and 3 with light brown hair."
         variant="outlined"
         sx={{ mb: 3 }}
       />

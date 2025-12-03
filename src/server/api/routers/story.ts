@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { stories } from "~/server/db/schema";
+import { stories, instructions } from "~/server/db/schema";
 import { createImage } from "~/server/services/image";
 import { streamStory } from "~/server/services/story";
 
@@ -10,14 +10,18 @@ export const storyRouter = createTRPCRouter({
   create: protectedProcedure
     .input(z.object({ prompt: z.string().min(1) }))
     .mutation(async function* ({ ctx, input }) {
+      const instruction = await ctx.db.query.instructions.findFirst({
+        where: eq(instructions.userId, ctx.session.user.id),
+      });
+
       const stream = await streamStory({
-        userId: ctx.session.user.id,
         prompt: input.prompt,
+        instruction,
       });
 
       let text = "";
       let title = "";
-      let imageInstructions = "";
+      let imagePrompt = "";
 
       for await (const partialObject of stream.partialObjectStream) {
         if (partialObject.text !== undefined) {
@@ -31,8 +35,8 @@ export const storyRouter = createTRPCRouter({
           title = partialObject.title;
           yield { type: "title" as const, content: title };
         }
-        if (partialObject.imageInstructions !== undefined) {
-          imageInstructions = partialObject.imageInstructions;
+        if (partialObject.imagePrompt !== undefined) {
+          imagePrompt = partialObject.imagePrompt;
         }
       }
 
@@ -42,7 +46,7 @@ export const storyRouter = createTRPCRouter({
           prompt: input.prompt,
           title,
           text,
-          imageInstructions,
+          imagePrompt,
           userId: ctx.session.user.id,
         })
         .returning();
@@ -53,7 +57,7 @@ export const storyRouter = createTRPCRouter({
 
       yield { type: "storyId" as const, content: story.id };
 
-      const imageUrl = await createImage(story);
+      const imageUrl = await createImage({ story, instruction });
       if (imageUrl) {
         yield { type: "image" as const, content: imageUrl };
       }

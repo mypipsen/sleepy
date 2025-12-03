@@ -1,18 +1,16 @@
 import { openai } from "@ai-sdk/openai";
 import { streamObject } from "ai";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
 
-import { db } from "~/server/db/index";
-import { instructions } from "~/server/db/schema";
+import type { instructions } from "~/server/db/schema";
 
 const storySchema = z.object({
   title: z.string().describe("A title for the story"),
   text: z.string().describe("The full story text"),
-  imageInstructions: z
+  imagePrompt: z
     .string()
     .describe(
-      "Instructions for generating an image that fits the story. Always write these instructions in English. Describe the main characters visually and set the scenario.",
+      "Prompt for generating an image that fits the story. Always write this prompt in English. Describe the main characters visually and set the scene.",
     ),
 });
 
@@ -41,16 +39,12 @@ When the user gives inspiration for a new story, respond with the full bedtime t
 }
 
 export async function streamStory({
-  userId,
   prompt,
+  instruction,
 }: {
-  userId: string;
   prompt: string;
+  instruction?: typeof instructions.$inferSelect;
 }) {
-  const instruction = await db.query.instructions.findFirst({
-    where: eq(instructions.userId, userId),
-  });
-
   return streamObject({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
     model: openai("gpt-4.1") as any,

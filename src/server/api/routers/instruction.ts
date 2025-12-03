@@ -6,18 +6,25 @@ import { instructions } from "~/server/db/schema";
 
 export const instructionRouter = createTRPCRouter({
   upsert: protectedProcedure
-    .input(z.object({ text: z.string().min(1) }))
+    .input(
+      z.object({
+        text: z.string().optional(),
+        imageText: z.string().optional(),
+      }),
+    )
     .mutation(async function ({ ctx, input }) {
       await ctx.db
         .insert(instructions)
         .values({
           text: input.text,
+          imageText: input.imageText,
           userId: ctx.session.user.id,
         })
         .onConflictDoUpdate({
           target: instructions.userId,
           set: {
             text: input.text,
+            imageText: input.imageText,
             updatedAt: new Date(),
           },
         });

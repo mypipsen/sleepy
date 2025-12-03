@@ -94,7 +94,7 @@ export const stories = pgTable(
     prompt: d.text(),
     text: d.text(),
     title: d.text(),
-    imageInstructions: d.text(),
+    imagePrompt: d.text(),
     imageUrl: d.text(),
     userId: d
       .varchar({ length: 255 })
@@ -114,6 +114,7 @@ export const instructions = pgTable(
   (d) => ({
     id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
     text: d.text(),
+    imageText: d.text(),
     userId: d
       .varchar({ length: 255 })
       .notNull()

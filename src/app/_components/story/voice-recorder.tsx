@@ -12,7 +12,10 @@ type VoiceRecorderProps = {
   disabled?: boolean;
 };
 
-export function VoiceRecorder({ onTranscribe, disabled = false }: VoiceRecorderProps) {
+export function VoiceRecorder({
+  onTranscribe,
+  disabled = false,
+}: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
