@@ -1,6 +1,7 @@
-import { storyRouter } from "~/server/api/routers/story";
-import { instructionRouter } from "~/server/api/routers/instruction";
-import { transcribeRouter } from "~/server/api/routers/transcribe";
+import { adventureRouter } from "./routers/adventureRouter";
+import { storyRouter } from "~/server/api/routers/storyRouter";
+import { instructionRouter } from "~/server/api/routers/instructionRouter";
+import { transcribeRouter } from "~/server/api/routers/transcribeRouter";
 
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
@@ -11,6 +12,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   story: storyRouter,
+  adventure: adventureRouter,
   instruction: instructionRouter,
   transcribe: transcribeRouter,
 });

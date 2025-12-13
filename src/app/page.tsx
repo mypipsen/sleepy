@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Box } from "@mui/material";
 
 import { Story } from "~/app/_components/story";
+import { Adventure } from "~/app/_components/adventure";
 import { Sidebar } from "~/app/_components/sidebar";
 import { UnauthenticatedView } from "~/app/_components/unauthenticated-view";
 import { AppHeader } from "~/app/_components/shared/app-header";
@@ -15,13 +16,20 @@ function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [mode, setMode] = useState<"story" | "adventure">("story");
 
   const storyIdParam = searchParams.get("story");
   const selectedStoryId = storyIdParam ? parseInt(storyIdParam, 10) : null;
 
+  // Switch to story mode if a story is selected
+  if (selectedStoryId && mode !== "story") {
+    setMode("story");
+  }
+
   const handleSelectStory = useCallback(
     (id: number | null) => {
       if (id) {
+        setMode("story");
         router.push(`/?story=${id}`);
       } else {
         router.push("/");
@@ -30,6 +38,8 @@ function HomeContent() {
     },
     [router],
   );
+
+
 
   if (!session) {
     return <UnauthenticatedView />;
@@ -54,7 +64,27 @@ function HomeContent() {
       <AppHeader onMenuClick={() => setIsSidebarOpen(true)} />
 
       <Box component="main">
-        <Story storyId={selectedStoryId} />
+        {mode === "story" ? (
+          <Story
+            storyId={selectedStoryId}
+            mode={mode}
+            onModeChange={(_mode) => {
+              if (_mode !== "story") {
+                setMode(_mode);
+                router.push("/");
+              }
+            }}
+          />
+        ) : (
+          <Adventure
+            mode={mode}
+            onModeChange={(_mode) => {
+              if (_mode !== "adventure") {
+                setMode(_mode);
+              }
+            }}
+          />
+        )}
       </Box>
     </Box>
   );

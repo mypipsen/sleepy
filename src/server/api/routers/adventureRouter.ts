@@ -9,8 +9,8 @@ export const adventureRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
-        prompt: z.string().optional(),
-        adventureText: z.string().optional(),
+        prompt: z.string().min(1),
+        adventureSegments: z.array(z.string()).default([]),
         lastChoice: z.string().optional(),
       }),
     )
@@ -21,7 +21,7 @@ export const adventureRouter = createTRPCRouter({
 
       const stream = await streamAdventure({
         prompt: input.prompt,
-        adventureText: input.adventureText,
+        adventureSegments: input.adventureSegments,
         lastChoice: input.lastChoice,
         instruction,
       });

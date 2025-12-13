@@ -15,9 +15,11 @@ type Message = {
 
 type StoryProps = {
   storyId: number | null;
+  mode?: "story" | "adventure";
+  onModeChange?: (mode: "story" | "adventure") => void;
 };
 
-export function Story({ storyId }: StoryProps) {
+export function Story({ storyId, mode, onModeChange }: StoryProps) {
   const utils = api.useUtils();
   const [messages, setMessages] = useState<Message[]>([]);
   const [title, setTitle] = useState("");
@@ -88,7 +90,9 @@ export function Story({ storyId }: StoryProps) {
           } else if (chunk.type === "storyId") {
             setIsWaitingForImage(true);
             // Update URL without reloading
-            window.history.pushState({}, "", `/?story=${chunk.content}`);
+            const url = new URL(window.location.href);
+            url.searchParams.set("story", String(chunk.content));
+            window.history.pushState({}, "", url.toString());
           } else if (chunk.type === "image") {
             setGeneratedImage(chunk.content);
             setIsWaitingForImage(false);
@@ -112,6 +116,8 @@ export function Story({ storyId }: StoryProps) {
       <StoryInput
         onSubmit={handleSubmit}
         isGenerating={createStory.isPending}
+        mode={mode}
+        onModeChange={onModeChange}
       />
     );
   }

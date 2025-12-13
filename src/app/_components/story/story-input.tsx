@@ -9,6 +9,8 @@ import {
   Button,
   CircularProgress,
   Box,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import { VoiceRecorder } from "./voice-recorder";
@@ -16,9 +18,16 @@ import { VoiceRecorder } from "./voice-recorder";
 type StoryInputProps = {
   onSubmit: (prompt: string) => void;
   isGenerating: boolean;
+  mode?: "story" | "adventure";
+  onModeChange?: (mode: "story" | "adventure") => void;
 };
 
-export function StoryInput({ onSubmit, isGenerating }: StoryInputProps) {
+export function StoryInput({
+  onSubmit,
+  isGenerating,
+  mode,
+  onModeChange,
+}: StoryInputProps) {
   const [input, setInput] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -51,10 +60,11 @@ export function StoryInput({ onSubmit, isGenerating }: StoryInputProps) {
         }}
       >
         <Typography variant="h5" align="center" fontWeight="bold">
-          Start Your Story
+          Start Your {mode === "adventure" ? "Adventure" : "Story"}
         </Typography>
         <Typography variant="body2" align="center" color="text.secondary">
-          Tell me what kind of story you would like to hear...
+          Tell me what kind of {mode === "adventure" ? "adventure" : "story"}{" "}
+          you would like to hear...
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
@@ -68,27 +78,56 @@ export function StoryInput({ onSubmit, isGenerating }: StoryInputProps) {
             sx={{ mb: 2 }}
             autoFocus
           />
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <VoiceRecorder
-              onTranscribe={(text) => setInput(text)}
-              disabled={isGenerating}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              size="large"
-              disabled={isGenerating || !input.trim()}
-              endIcon={
-                isGenerating ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  <SendIcon />
-                )
-              }
-            >
-              {isGenerating ? "Creating..." : "Create Story"}
-            </Button>
+          {onModeChange && mode && (
+            <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+              <ToggleButtonGroup
+                value={mode}
+                exclusive
+                onChange={(_, newMode) => {
+                  if (newMode) onModeChange(newMode as "story" | "adventure");
+                }}
+                aria-label="story mode"
+                size="small"
+                fullWidth
+              >
+                <ToggleButton value="story" aria-label="story">
+                  Story
+                </ToggleButton>
+                <ToggleButton value="adventure" aria-label="adventure">
+                  Adventure
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+          )}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+            }}
+          >
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <VoiceRecorder
+                onTranscribe={(text) => setInput(text)}
+                disabled={isGenerating}
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                disabled={isGenerating || !input.trim()}
+                endIcon={
+                  isGenerating ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <SendIcon />
+                  )
+                }
+              >
+                {isGenerating ? "Creating..." : "Create"}
+              </Button>
+            </Box>
           </Box>
         </form>
       </Paper>
