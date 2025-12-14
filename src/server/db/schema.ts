@@ -109,6 +109,57 @@ export const stories = pgTable(
   (t) => [index("user_id_idx").on(t.userId)],
 );
 
+export const adventures = pgTable(
+  "adventure",
+  (d) => ({
+    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    prompt: d.text().notNull(),
+    title: d.text(),
+    imagePrompt: d.text(),
+    imageUrl: d.text(),
+    userId: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => users.id),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+  }),
+  (t) => [index("adventure_user_id_idx").on(t.userId)],
+);
+
+export const adventureSegments = pgTable(
+  "adventure_segment",
+  (d) => ({
+    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    text: d.text().notNull(),
+    choice: d.text(),
+    adventureId: d
+      .integer()
+      .notNull()
+      .references(() => adventures.id),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+  }),
+  (t) => [index("adventure_id_idx").on(t.adventureId)],
+);
+
+export const adventuresRelations = relations(adventures, ({ many }) => ({
+  segments: many(adventureSegments),
+}));
+
+export const adventureSegmentsRelations = relations(adventureSegments, ({ one }) => ({
+  adventure: one(adventures, {
+    fields: [adventureSegments.adventureId],
+    references: [adventures.id],
+  }),
+}));
+
 export const instructions = pgTable(
   "instruction",
   (d) => ({
