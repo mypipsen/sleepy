@@ -1,6 +1,7 @@
 "use client";
 
-import { Box, Paper, CircularProgress, Typography } from "@mui/material";
+import { Paper, Stack } from "@mui/material";
+import { LoadingIndicator } from "../shared/loading-indicator";
 
 type StoryImageProps = {
   imageUrl: string | null;
@@ -13,7 +14,7 @@ export function StoryImage({ imageUrl, isLoading }: StoryImageProps) {
   }
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+    <Stack direction="row" justifyContent="flex-start">
       <Paper
         elevation={0}
         sx={{
@@ -24,18 +25,9 @@ export function StoryImage({ imageUrl, isLoading }: StoryImageProps) {
         }}
       >
         {isLoading ? (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <CircularProgress size={20} />
-            <Typography>Generating image...</Typography>
-          </Box>
+          <LoadingIndicator message="Generating image..." size={20} />
         ) : typeof imageUrl === "string" ? (
-          <Box
+          <Stack
             component="img"
             src={imageUrl}
             alt="Generated story illustration"
@@ -47,6 +39,6 @@ export function StoryImage({ imageUrl, isLoading }: StoryImageProps) {
           />
         ) : null}
       </Paper>
-    </Box>
+    </Stack>
   );
 }

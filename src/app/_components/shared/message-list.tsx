@@ -1,8 +1,9 @@
 "use client";
 
-import { Box, Paper, Typography } from "@mui/material";
+import { Paper, Stack } from "@mui/material";
 import { Message } from "./message";
-import { MessageLoadingSkeleton } from "../shared/loading-skeleton";
+import { MessageLoadingSkeleton } from "./loading-skeleton";
+import { LoadingIndicator } from "./loading-indicator";
 
 type MessageType = {
   id: string;
@@ -28,7 +29,7 @@ export function MessageList({
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+    <Stack spacing={2}>
       {messages.map((msg) => (
         <Message
           key={msg.id}
@@ -38,7 +39,7 @@ export function MessageList({
       ))}
 
       {isPending && messages[messages.length - 1]?.role === "user" && (
-        <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+        <Stack direction="row" justifyContent="flex-start">
           <Paper
             elevation={0}
             sx={{
@@ -47,10 +48,10 @@ export function MessageList({
               bgcolor: "action.hover",
             }}
           >
-            <Typography className="animate-pulse">Thinking...</Typography>
+            <LoadingIndicator message="Thinking..." size={20} />
           </Paper>
-        </Box>
+        </Stack>
       )}
-    </Box>
+    </Stack>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Paper, Typography } from "@mui/material";
+import { Paper, Typography, Stack } from "@mui/material";
 
 type Message = {
   id: string;
@@ -17,23 +17,17 @@ export function Message({ message, title }: MessageProps) {
   const isAssistant = message.role === "assistant";
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: isAssistant ? "flex-start" : "flex-end",
-        width: "100%",
-      }}
+    <Stack
+      spacing={1}
+      alignItems={isAssistant ? "flex-start" : "flex-end"}
+      width="100%"
     >
       {isAssistant && title && (
         <Typography
           variant="h5"
           component="h1"
-          sx={{
-            fontWeight: "bold",
-            mb: 1,
-            color: "text.primary",
-          }}
+          fontWeight="bold"
+          color="text.primary"
         >
           {title}
         </Typography>
@@ -53,6 +47,6 @@ export function Message({ message, title }: MessageProps) {
           {message.content}
         </Typography>
       </Paper>
-    </Box>
+    </Stack>
   );
 }

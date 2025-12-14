@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Box } from "@mui/material";
+import { Stack } from "@mui/material";
 import { api } from "~/trpc/react";
-import { StoryInput } from "./story/story-input";
-import { MessageList } from "./story/message-list";
-import { StoryImage } from "./story/story-image";
+import { MessageInput } from "./shared/message-input";
+import { MessageList } from "./shared/message-list";
+import { StoryImage } from "./shared/story-image";
 
 type Message = {
   id: string;
@@ -113,7 +113,7 @@ export function Story({ storyId, mode, onModeChange }: StoryProps) {
   // Show input form for new stories
   if (!storyId && messages.length === 0) {
     return (
-      <StoryInput
+      <MessageInput
         onSubmit={handleSubmit}
         isGenerating={createStory.isPending}
         mode={mode}
@@ -124,16 +124,14 @@ export function Story({ storyId, mode, onModeChange }: StoryProps) {
 
   // Show messages for existing or generating stories
   return (
-    <Box sx={{ p: 2, pb: 4 }}>
+    <Stack spacing={2} sx={{ p: 2, pb: 4 }}>
       <MessageList
         messages={messages}
         title={title}
         isLoading={isLoading}
         isPending={createStory.isPending}
       />
-      <Box sx={{ mt: 2 }}>
-        <StoryImage imageUrl={generatedImage} isLoading={isWaitingForImage} />
-      </Box>
-    </Box>
+      <StoryImage imageUrl={generatedImage} isLoading={isWaitingForImage} />
+    </Stack>
   );
 }

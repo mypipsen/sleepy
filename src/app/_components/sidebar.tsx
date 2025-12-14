@@ -4,13 +4,14 @@ import { useState, useCallback } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
-import { Drawer, Toolbar, Divider, Box, Button } from "@mui/material";
+import { Drawer, Toolbar, Divider, Stack, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import InfoIcon from "@mui/icons-material/Info";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { StoryList } from "./sidebar/story-list";
 import { UserProfile } from "./sidebar/user-profile";
 import { DeleteDialog } from "./sidebar/delete-dialog";
+import { ActionButton } from "./shared/action-button";
 
 const drawerWidth = 280;
 
@@ -90,7 +91,7 @@ export function Sidebar({
           },
         }}
       >
-        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        <Stack sx={{ height: "100%" }}>
           <Toolbar sx={{ px: 2 }}>
             <Button
               variant="contained"
@@ -106,7 +107,7 @@ export function Sidebar({
             </Button>
           </Toolbar>
           <Divider />
-          <Box sx={{ flexGrow: 1, overflow: "auto" }}>
+          <Stack sx={{ flexGrow: 1, overflow: "auto" }}>
             <StoryList
               stories={stories}
               selectedId={selectedStoryId}
@@ -114,30 +115,24 @@ export function Sidebar({
               onDelete={handleDeleteClick}
               isLoading={isLoading}
             />
-          </Box>
+          </Stack>
           <Divider />
-          <Box sx={{ p: 2 }}>
+          <Stack spacing={2} sx={{ p: 2 }}>
             <UserProfile user={session?.user} />
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              <Button
+            <Stack spacing={1}>
+              <ActionButton
                 onClick={handleInstructions}
-                startIcon={<InfoIcon />}
-                fullWidth
-                sx={{ justifyContent: "flex-start" }}
-              >
-                Instructions
-              </Button>
-              <Button
+                icon={InfoIcon}
+                label="Instructions"
+              />
+              <ActionButton
                 onClick={handleLogout}
-                startIcon={<LogoutIcon />}
-                fullWidth
-                sx={{ justifyContent: "flex-start" }}
-              >
-                Logout
-              </Button>
-            </Box>
-          </Box>
-        </Box>
+                icon={LogoutIcon}
+                label="Logout"
+              />
+            </Stack>
+          </Stack>
+        </Stack>
       </Drawer>
 
       <DeleteDialog

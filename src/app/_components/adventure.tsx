@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Stack } from "@mui/material";
 import { api } from "~/trpc/react";
-import { StoryInput } from "./story/story-input";
-import { MessageList } from "./story/message-list";
+import { MessageInput } from "./shared/message-input";
+import { MessageList } from "./shared/message-list";
+import { ChoiceButton } from "./shared/choice-button";
 
 type Message = {
   id: string;
@@ -97,7 +98,7 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
 
   if (messages.length === 0) {
     return (
-      <StoryInput
+      <MessageInput
         onSubmit={handleStart}
         isGenerating={isGenerating}
         mode={mode}
@@ -107,56 +108,24 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
   }
 
   return (
-    <Box sx={{ p: 2, pb: 4 }}>
+    <Stack spacing={2} sx={{ p: 2, pb: 4 }}>
       <MessageList
         messages={messages}
-        isLoading={false} // Adventure doesn't load from DB initially in this version
+        isLoading={false}
         isPending={isGenerating}
       />
 
       {!isGenerating && choices.length > 0 && (
-        <Box sx={{ mt: 4, display: "flex", flexDirection: "column", gap: 2 }}>
-          <Typography variant="h6" align="center" gutterBottom>
-            What do you do?
-          </Typography>
+        <Stack spacing={2} sx={{ mt: 2 }}>
           {choices.map((choice, index) => (
-            <Button
+            <ChoiceButton
               key={index}
-              variant="outlined"
-              size="large"
+              choice={choice}
               onClick={() => handleChoice(choice)}
-              sx={{
-                justifyContent: "flex-start",
-                textAlign: "left",
-                p: 3,
-                borderRadius: 4,
-                borderWidth: 1,
-                borderColor: "divider",
-                transition: "all 0.2s",
-                textTransform: "none",
-                fontSize: "1.1rem",
-                position: "relative",
-                overflow: "hidden",
-                bgcolor: "background.paper",
-                color: "text.primary",
-                "&:hover": {
-                  borderWidth: 1,
-                  borderColor: "primary.main",
-                  bgcolor: "primary.50", // Light background on hover
-                  transform: "translateY(-2px)",
-                  boxShadow: 2,
-                },
-                "&:active": {
-                  transform: "translateY(0)",
-                  boxShadow: 1,
-                },
-              }}
-            >
-              {choice}
-            </Button>
+            />
           ))}
-        </Box>
+        </Stack>
       )}
-    </Box>
+    </Stack>
   );
 }

@@ -3,7 +3,7 @@
 import { useState, Suspense, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Box } from "@mui/material";
+import { Stack } from "@mui/material";
 
 import { Story } from "~/app/_components/story";
 import { Adventure } from "~/app/_components/adventure";
@@ -39,14 +39,12 @@ function HomeContent() {
     [router],
   );
 
-
-
   if (!session) {
     return <UnauthenticatedView />;
   }
 
   return (
-    <Box
+    <Stack
       sx={{
         minHeight: "100vh",
         bgcolor: "background.default",
@@ -63,7 +61,7 @@ function HomeContent() {
 
       <AppHeader onMenuClick={() => setIsSidebarOpen(true)} />
 
-      <Box component="main">
+      <Stack component="main">
         {mode === "story" ? (
           <Story
             storyId={selectedStoryId}
@@ -85,8 +83,8 @@ function HomeContent() {
             }}
           />
         )}
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
   );
 }
 
