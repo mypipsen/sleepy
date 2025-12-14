@@ -13,7 +13,7 @@ const adventureSchema = z.object({
   choices: z
     .array(z.string())
     .describe(
-      "0 to 4 meaningful choices that lead the adventure in clearly different directions. This should be empty when the adventure is over.",
+      "Some meaningful choices that lead the adventure in clearly different directions. This should be empty when the adventure is over.",
     ),
 });
 
@@ -28,37 +28,65 @@ function getPrompt({
   lastChoice?: string;
   instruction?: typeof instructions.$inferSelect;
 }) {
-  return `You are generating a short interactive choose your own adventure story for children.
+  const currentSegment = adventureSegments.length + 1;
+  const maxSegments = 7;
 
-The user will provide four things:
+  return `
+You are generating a short interactive choose your own adventure story for children.
 
-1. General instructions that apply to every adventure:
+The user provides four inputs.
+
+1. Global instructions that apply to every adventure:
 \`\`\`
 ${instruction?.text}
 \`\`\`
 
-2. The prompt to start the initial adventure:
+2. The prompt that started the adventure:
 \`\`\`
 ${prompt}
 \`\`\`
 
-3. The adventure so far in segments:
+3. The adventure so far, in order:
 \`\`\`
 ${JSON.stringify(adventureSegments)}
 \`\`\`
 
-4. The user's last choice:
+4. The user's most recent choice:
 \`\`\`
-${lastChoice}
+${lastChoice ?? "None. This is the beginning of the adventure."}
 \`\`\`
 
-Follow these requirements:
-- Write the next adventure segment in 2 to 4 sentences.
-- End the segment at a natural decision point.
-- Provide 2 to 4 meaningful choices that lead the adventure in clearly different directions.
-- Finish the story after a total of 5-10 segments.
+Story state:
+- Current segment number: ${currentSegment}
+- Maximum number of segments: ${maxSegments}
+
+Hard rules you must follow exactly:
+- Write exactly one new adventure segment.
+- The segment must be 2 to 4 sentences long.
 - Keep language suitable for all ages.
-- Use emojis when they fit into the adventure.
+- Use emojis when they naturally fit the story.
+- The response must strictly match the provided JSON schema.
+
+Branching rules:
+- If currentSegment is less than maxSegments:
+  - End the segment at a natural decision point.
+  - Provide 2 to 4 meaningful choices.
+  - Each choice must lead the story in a clearly different direction.
+  - The choices array must NOT be empty.
+- If currentSegment is equal to maxSegments:
+  - This is the final segment of the story.
+  - Write a clear and satisfying ending with resolution.
+  - Do NOT introduce new plot threads.
+  - Do NOT end at a decision point.
+  - The choices array MUST be empty.
+
+Schema semantics:
+- An empty choices array means the story is finished.
+- Once the choices array is empty, the story must not continue.
+
+Output format:
+- Return a single JSON object that matches the schema.
+- Do not include explanations, commentary, or extra text.
 `;
 }
 
