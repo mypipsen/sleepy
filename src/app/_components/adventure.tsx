@@ -23,14 +23,16 @@ type AdventureProps = {
 
 export function Adventure({ mode, onModeChange }: AdventureProps) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [adventureSegments, setAdventureSegments] = useState<string[]>([]);
+  const [adventureId, setAdventureId] = useState<number | undefined>(undefined);
+
   const [initialPrompt, setInitialPrompt] = useState("");
   const [choices, setChoices] = useState<string[]>([]);
   const [choiceType, setChoiceType] = useState<"story" | "image">("story");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const createAdventure = api.adventure.create.useMutation();
+  const startAdventure = api.adventure.start.useMutation();
+  const chatAdventure = api.adventure.chat.useMutation();
 
   const handleInteract = useCallback(
     async (params: {
@@ -59,19 +61,22 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
       ]);
 
       try {
-        const result = await createAdventure.mutateAsync({
-          prompt: currentPrompt,
-          adventureSegments, // Send accumulated segments
+        let result;
 
-          lastChoice: params.lastChoice,
-          choiceType: params.choiceType ?? "story",
-        });
-
-        let currentSegment = "";
+        if (!adventureId) {
+          result = await startAdventure.mutateAsync({
+            prompt: currentPrompt,
+          });
+        } else {
+          result = await chatAdventure.mutateAsync({
+            adventureId,
+            choice: userContent,
+            choiceType: params.choiceType ?? "story",
+          });
+        }
 
         for await (const chunk of result) {
           if (chunk.type === "text") {
-            currentSegment += chunk.content;
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === assistantMessageId
@@ -90,18 +95,19 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
             }
           } else if (chunk.type === "image") {
             setGeneratedImage(chunk.content);
+          } else if (chunk.type === "id") {
+            setAdventureId(chunk.content);
           }
         }
 
         // Append the new segment to the list
-        setAdventureSegments((prev) => [...prev, currentSegment]);
       } catch (error) {
         console.error("Failed to generate adventure:", error);
       } finally {
         setIsGenerating(false);
       }
     },
-    [createAdventure, adventureSegments, initialPrompt, isGenerating],
+    [startAdventure, chatAdventure, initialPrompt, isGenerating, adventureId],
   );
 
   const handleStart = (prompt: string) => {

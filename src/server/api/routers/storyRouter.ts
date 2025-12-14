@@ -59,12 +59,16 @@ export const storyRouter = createTRPCRouter({
 
       const imageUrl = await createImage({
         prompt: imagePrompt,
-        story,
         instruction,
       });
 
       if (imageUrl) {
         yield { type: "image" as const, content: imageUrl };
+
+        await ctx.db
+          .update(stories)
+          .set({ imageUrl })
+          .where(eq(stories.id, story.id));
       }
     }),
 

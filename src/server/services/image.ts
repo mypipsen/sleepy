@@ -1,10 +1,8 @@
 import { openai } from "@ai-sdk/openai";
 import { put } from "@vercel/blob";
 import { experimental_generateImage as generateImage } from "ai";
-import { eq } from "drizzle-orm";
 
-import { db } from "~/server/db/index";
-import { type instructions, stories } from "~/server/db/schema";
+import { type instructions } from "~/server/db/schema";
 
 function getPrompt(
   imagePrompt: string,
@@ -33,11 +31,9 @@ Do not include text in the image. Focus on a single scene that represents the he
 
 export async function createImage({
   prompt,
-  story,
   instruction,
 }: {
   prompt: string;
-  story?: typeof stories.$inferSelect;
   instruction?: typeof instructions.$inferSelect;
 }) {
   if (!prompt) {
@@ -59,13 +55,6 @@ export async function createImage({
       addRandomSuffix: true,
     },
   );
-
-  if (story) {
-    await db
-      .update(stories)
-      .set({ imageUrl: url })
-      .where(eq(stories.id, story.id));
-  }
 
   return url;
 }

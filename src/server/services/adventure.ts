@@ -1,8 +1,14 @@
 import { openai } from "@ai-sdk/openai";
 import { streamObject } from "ai";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import type { instructions } from "~/server/db/schema";
+import { db } from "~/server/db/index";
+import {
+  type adventures,
+  adventureSegments,
+  type instructions,
+} from "~/server/db/schema";
 
 const adventureSchema = z.object({
   text: z
@@ -23,17 +29,17 @@ const adventureSchema = z.object({
 });
 
 function getPrompt({
-  prompt,
-  adventureSegments,
+  adventure,
+  segments,
   lastChoice,
   instruction,
 }: {
-  prompt: string;
-  adventureSegments: string[];
+  adventure: typeof adventures.$inferSelect;
+  segments: Array<typeof adventureSegments.$inferInsert>;
   lastChoice?: string;
   instruction?: typeof instructions.$inferSelect;
 }) {
-  const currentSegment = adventureSegments.length + 1;
+  const currentSegment = segments.length + 1;
   const storySegments = 6;
   const imagePromptSegment = storySegments + 1;
 
@@ -49,12 +55,12 @@ ${instruction?.text ?? ""}
 
 2. The prompt that started the adventure:
 \`\`\`
-${prompt}
+${adventure.prompt}
 \`\`\`
 
 3. The adventure so far, in order:
 \`\`\`
-${JSON.stringify(adventureSegments)}
+${JSON.stringify(segments)}
 \`\`\`
 
 4. The user's most recent choice:
@@ -91,7 +97,6 @@ If currentSegment is exactly ${imagePromptSegment}:
 - Do NOT introduce new plot threads.
 - Do NOT end at a decision point.
 - After the conclusion, provide 2 to 4 image prompt choices.
-- Each image prompt must clearly start with wording like "Create an image of".
 - Each image prompt must depict a different scene that occurred in the story, such as the beginning, a major challenge, a turning point, or the resolution.
 - Each prompt must focus on different characters, locations, or actions.
 - Do NOT invent new scenes or events.
@@ -110,20 +115,23 @@ Output format:
 }
 
 export async function streamAdventure({
-  prompt,
-  adventureSegments,
-  lastChoice,
+  adventure,
   instruction,
+  lastChoice,
 }: {
-  prompt: string;
-  adventureSegments: string[];
-  lastChoice?: string;
+  adventure: typeof adventures.$inferSelect;
   instruction?: typeof instructions.$inferSelect;
+  lastChoice?: string;
 }) {
+  const segments = await db.query.adventureSegments.findMany({
+    where: eq(adventureSegments.adventureId, adventure.id),
+    orderBy: (segments, { asc }) => [asc(segments.id)],
+  });
+
   return streamObject({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
     model: openai("gpt-4.1") as any,
-    prompt: getPrompt({ prompt, adventureSegments, lastChoice, instruction }),
+    prompt: getPrompt({ adventure, segments, lastChoice, instruction }),
     schema: adventureSchema,
   });
 }

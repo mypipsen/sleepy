@@ -153,12 +153,15 @@ export const adventuresRelations = relations(adventures, ({ many }) => ({
   segments: many(adventureSegments),
 }));
 
-export const adventureSegmentsRelations = relations(adventureSegments, ({ one }) => ({
-  adventure: one(adventures, {
-    fields: [adventureSegments.adventureId],
-    references: [adventures.id],
+export const adventureSegmentsRelations = relations(
+  adventureSegments,
+  ({ one }) => ({
+    adventure: one(adventures, {
+      fields: [adventureSegments.adventureId],
+      references: [adventures.id],
+    }),
   }),
-}));
+);
 
 export const instructions = pgTable(
   "instruction",
