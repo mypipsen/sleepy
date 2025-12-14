@@ -41,10 +41,7 @@ export default function InstructionsPage() {
         mx: "auto",
       }}
     >
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <AppHeader onMenuClick={() => setIsSidebarOpen(true)} />
 

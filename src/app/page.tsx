@@ -26,8 +26,6 @@ function HomeContent() {
     setMode("story");
   }
 
-
-
   if (!session) {
     return <UnauthenticatedView />;
   }
@@ -41,10 +39,7 @@ function HomeContent() {
         mx: "auto",
       }}
     >
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <AppHeader onMenuClick={() => setIsSidebarOpen(true)} />
 

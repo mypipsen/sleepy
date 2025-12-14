@@ -32,24 +32,26 @@ Do not include text in the image. Focus on a single scene that represents the he
 }
 
 export async function createImage({
+  prompt,
   story,
   instruction,
 }: {
-  story: typeof stories.$inferSelect;
+  prompt: string;
+  story?: typeof stories.$inferSelect;
   instruction?: typeof instructions.$inferSelect;
 }) {
-  if (!story.imagePrompt) {
+  if (!prompt) {
     return;
   }
 
   const { image } = await generateImage({
     model: openai.image("dall-e-3"),
-    prompt: getPrompt(story.imagePrompt, instruction),
+    prompt: getPrompt(prompt, instruction),
     size: "1024x1024",
   });
 
   const { url } = await put(
-    `images/story-${story.id}`,
+    `images/${crypto.randomUUID()}`,
     Buffer.from(image.base64, "base64"),
     {
       contentType: image.mediaType,
@@ -58,10 +60,12 @@ export async function createImage({
     },
   );
 
-  await db
-    .update(stories)
-    .set({ imageUrl: url })
-    .where(eq(stories.id, story.id));
+  if (story) {
+    await db
+      .update(stories)
+      .set({ imageUrl: url })
+      .where(eq(stories.id, story.id));
+  }
 
   return url;
 }

@@ -8,6 +8,7 @@ import { api } from "~/trpc/react";
 import { ChoiceButton } from "./shared/choice-button";
 import { MessageInput } from "./shared/message-input";
 import { MessageList } from "./shared/message-list";
+import { StoryImage } from "./shared/story-image";
 
 type Message = {
   id: string;
@@ -25,12 +26,18 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
   const [adventureSegments, setAdventureSegments] = useState<string[]>([]);
   const [initialPrompt, setInitialPrompt] = useState("");
   const [choices, setChoices] = useState<string[]>([]);
+  const [choiceType, setChoiceType] = useState<"story" | "image">("story");
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const createAdventure = api.adventure.create.useMutation();
 
   const handleInteract = useCallback(
-    async (params: { prompt?: string; lastChoice?: string }) => {
+    async (params: {
+      prompt?: string;
+      lastChoice?: string;
+      choiceType?: "story" | "image";
+    }) => {
       if (isGenerating) return;
       setIsGenerating(true);
       setChoices([]);
@@ -55,7 +62,9 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
         const result = await createAdventure.mutateAsync({
           prompt: currentPrompt,
           adventureSegments, // Send accumulated segments
+
           lastChoice: params.lastChoice,
+          choiceType: params.choiceType ?? "story",
         });
 
         let currentSegment = "";
@@ -76,6 +85,11 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
                 (c): c is string => c !== undefined && c !== null,
               ),
             );
+            if (chunk.choiceType) {
+              setChoiceType(chunk.choiceType);
+            }
+          } else if (chunk.type === "image") {
+            setGeneratedImage(chunk.content);
           }
         }
 
@@ -95,7 +109,7 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
   };
 
   const handleChoice = (choice: string) => {
-    void handleInteract({ lastChoice: choice });
+    void handleInteract({ lastChoice: choice, choiceType });
   };
 
   if (messages.length === 0) {
@@ -117,7 +131,12 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
         isPending={isGenerating}
       />
 
-      {!isGenerating && choices.length > 0 && (
+      <StoryImage
+        imageUrl={generatedImage}
+        isLoading={isGenerating && choiceType === "image"}
+      />
+
+      {!isGenerating && !generatedImage && choices.length > 0 && (
         <Stack spacing={2} sx={{ mt: 2 }}>
           {choices.map((choice, index) => (
             <ChoiceButton

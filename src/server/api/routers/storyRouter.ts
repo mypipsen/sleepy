@@ -57,7 +57,12 @@ export const storyRouter = createTRPCRouter({
 
       yield { type: "storyId" as const, content: story.id };
 
-      const imageUrl = await createImage({ story, instruction });
+      const imageUrl = await createImage({
+        prompt: imagePrompt,
+        story,
+        instruction,
+      });
+
       if (imageUrl) {
         yield { type: "image" as const, content: imageUrl };
       }
