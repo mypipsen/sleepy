@@ -1,13 +1,16 @@
 "use client";
 
 import MenuIcon from "@mui/icons-material/Menu";
-import { AppBar, Box,IconButton, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, IconButton, Toolbar, Typography } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 type AppHeaderProps = {
   onMenuClick: () => void;
 };
 
 export function AppHeader({ onMenuClick }: AppHeaderProps) {
+  const router = useRouter();
+
   return (
     <AppBar
       position="sticky"
@@ -30,15 +33,22 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
         >
           <MenuIcon />
         </IconButton>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{ flexGrow: 1, cursor: "pointer" }}
+          onClick={() => router.push("/")}
+        >
           Sleepy
         </Typography>
         <Box
           component="img"
           src="logo.png"
+          onClick={() => router.push("/")}
           sx={{
             width: "45px",
             height: "auto",
+            cursor: "pointer",
           }}
         />
       </Toolbar>

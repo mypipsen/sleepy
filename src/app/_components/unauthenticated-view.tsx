@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button,Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import Link from "next/link";
 
 export function UnauthenticatedView() {

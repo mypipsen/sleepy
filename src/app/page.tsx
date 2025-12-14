@@ -3,7 +3,7 @@
 import { Stack } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Suspense, useCallback,useState } from "react";
+import { Suspense, useState } from "react";
 
 import { Adventure } from "~/app/_components/adventure";
 import { AppHeader } from "~/app/_components/shared/app-header";
@@ -26,18 +26,7 @@ function HomeContent() {
     setMode("story");
   }
 
-  const handleSelectStory = useCallback(
-    (id: number | null) => {
-      if (id) {
-        setMode("story");
-        router.push(`/?story=${id}`);
-      } else {
-        router.push("/");
-      }
-      setIsSidebarOpen(false);
-    },
-    [router],
-  );
+
 
   if (!session) {
     return <UnauthenticatedView />;
@@ -53,8 +42,6 @@ function HomeContent() {
       }}
     >
       <Sidebar
-        onSelectStory={handleSelectStory}
-        selectedStoryId={selectedStoryId}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />

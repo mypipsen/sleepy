@@ -4,7 +4,7 @@ import { experimental_generateImage as generateImage } from "ai";
 import { eq } from "drizzle-orm";
 
 import { db } from "~/server/db/index";
-import { type instructions,stories } from "~/server/db/schema";
+import { type instructions, stories } from "~/server/db/schema";
 
 function getPrompt(
   imagePrompt: string,

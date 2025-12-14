@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { instructions,stories } from "~/server/db/schema";
+import { instructions, stories } from "~/server/db/schema";
 import { createImage } from "~/server/services/image";
 import { streamStory } from "~/server/services/story";
 
@@ -63,12 +63,15 @@ export const storyRouter = createTRPCRouter({
       }
     }),
 
-  getAll: protectedProcedure.query(async ({ ctx }) => {
-    return await ctx.db.query.stories.findMany({
-      where: eq(stories.userId, ctx.session.user.id),
-      orderBy: (stories, { desc }) => [desc(stories.createdAt)],
-    });
-  }),
+  getAll: protectedProcedure
+    .input(z.object({ limit: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.query.stories.findMany({
+        where: eq(stories.userId, ctx.session.user.id),
+        orderBy: (stories, { desc }) => [desc(stories.createdAt)],
+        limit: input?.limit,
+      });
+    }),
 
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))

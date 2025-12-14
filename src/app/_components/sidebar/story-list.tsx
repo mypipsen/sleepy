@@ -1,47 +1,43 @@
-"use client";
+import { List, ListItemButton, ListItemText, Typography } from "@mui/material";
 
-import { List, Typography } from "@mui/material";
-
-import type { RouterOutputs } from "~/trpc/react";
-
-import { StoryListItem } from "./story-list-item";
+type Story = {
+  id: number;
+  title: string | null;
+  createdAt: Date;
+};
 
 type StoryListProps = {
-  stories: RouterOutputs["story"]["getAll"] | undefined;
-  selectedId: number | null;
+  stories: Story[] | undefined;
   onSelect: (id: number) => void;
-  onDelete: (id: number) => void;
   isLoading: boolean;
 };
 
-export function StoryList({
-  stories,
-  selectedId,
-  onSelect,
-  onDelete,
-  isLoading,
-}: StoryListProps) {
+export function StoryList({ stories, onSelect, isLoading }: StoryListProps) {
   if (isLoading) {
+    return <Typography sx={{ p: 2 }}>Loading...</Typography>;
+  }
+
+  if (!stories?.length) {
     return (
-      <Typography sx={{ p: 2, textAlign: "center", color: "text.secondary" }}>
-        Loading...
+      <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>
+        No stories yet.
       </Typography>
     );
   }
 
   return (
-    <List>
-      {stories?.map((story) => (
-        <StoryListItem
-          key={story.id}
-          story={story}
-          isSelected={selectedId === story.id}
-          onSelect={() => onSelect(story.id)}
-          onDelete={(e) => {
-            e.stopPropagation();
-            onDelete(story.id);
-          }}
-        />
+    <List dense>
+      {stories.map((story) => (
+        <ListItemButton key={story.id} onClick={() => onSelect(story.id)}>
+          <ListItemText
+            primary={story.title ?? "Untitled Story"}
+            secondary={story.createdAt.toLocaleDateString()}
+            primaryTypographyProps={{
+              noWrap: true,
+              style: { fontWeight: 500 },
+            }}
+          />
+        </ListItemButton>
       ))}
     </List>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Container,Paper, Typography } from "@mui/material";
+import { Box, Container, Paper, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -42,14 +42,6 @@ export default function InstructionsPage() {
       }}
     >
       <Sidebar
-        onSelectStory={(id) => {
-          if (id === null) {
-            router.push("/");
-          } else {
-            router.push(`/?story=${id}`);
-          }
-        }}
-        selectedStoryId={null}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
