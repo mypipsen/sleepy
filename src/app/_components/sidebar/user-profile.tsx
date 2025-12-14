@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Avatar, Typography } from "@mui/material";
+import { Avatar, Box, Typography } from "@mui/material";
 
 type User = {
   name?: string | null;

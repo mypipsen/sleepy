@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@mui/material";
 import type { SvgIconComponent } from "@mui/icons-material";
+import { Button } from "@mui/material";
 
 type ActionButtonProps = {
   onClick: () => void;

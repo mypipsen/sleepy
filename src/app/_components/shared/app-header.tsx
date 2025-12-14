@@ -1,7 +1,7 @@
 "use client";
 
-import { AppBar, Toolbar, IconButton, Typography, Box } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import { AppBar, Box,IconButton, Toolbar, Typography } from "@mui/material";
 
 type AppHeaderProps = {
   onMenuClick: () => void;

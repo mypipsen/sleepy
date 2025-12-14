@@ -1,6 +1,6 @@
+import type { AdapterAccountType } from "@auth/core/adapters";
 import { relations } from "drizzle-orm";
 import { index, pgTable, primaryKey } from "drizzle-orm/pg-core";
-import type { AdapterAccountType } from "@auth/core/adapters";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same

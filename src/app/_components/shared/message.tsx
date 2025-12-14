@@ -1,6 +1,6 @@
 "use client";
 
-import { Paper, Typography, Stack } from "@mui/material";
+import { Paper, Stack,Typography } from "@mui/material";
 
 type Message = {
   id: string;

@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import SendIcon from "@mui/icons-material/Send";
 import {
-  Container,
-  Paper,
-  Typography,
-  TextField,
   Button,
   CircularProgress,
+  Container,
+  Paper,
   Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
-import SendIcon from "@mui/icons-material/Send";
-import { VoiceRecorder } from "./voice-recorder";
+import { useState } from "react";
+
 import { ModeToggle } from "./mode-toggle";
+import { VoiceRecorder } from "./voice-recorder";
 
 type MessageInputProps = {
   onSubmit: (prompt: string) => void;

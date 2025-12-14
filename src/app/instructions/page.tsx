@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { Box, Container,Paper, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { api } from "~/trpc/react";
-import { Sidebar } from "~/app/_components/sidebar";
+import { useState } from "react";
+
 import { AppHeader } from "~/app/_components/shared/app-header";
 import { FormLoadingSkeleton } from "~/app/_components/shared/loading-skeleton";
+import { Sidebar } from "~/app/_components/sidebar";
+import { api } from "~/trpc/react";
+
 import { InstructionsForm } from "./instructions-form";
-import { Box, Typography, Paper, Container } from "@mui/material";
 
 export default function InstructionsPage() {
   const router = useRouter();

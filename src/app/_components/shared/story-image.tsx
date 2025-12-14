@@ -1,6 +1,7 @@
 "use client";
 
 import { Paper, Stack } from "@mui/material";
+
 import { LoadingIndicator } from "../shared/loading-indicator";
 
 type StoryImageProps = {

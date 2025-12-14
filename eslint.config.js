@@ -1,5 +1,6 @@
 import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "typescript-eslint";
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 // @ts-ignore -- no types for this plugin
 import drizzle from "eslint-plugin-drizzle";
 
@@ -16,6 +17,7 @@ export default tseslint.config(
     files: ["**/*.ts", "**/*.tsx"],
     plugins: {
       drizzle,
+      'simple-import-sort': simpleImportSort,
     },
     extends: [
       ...tseslint.configs.recommended,
@@ -46,6 +48,8 @@ export default tseslint.config(
         "error",
         { drizzleObjectName: ["db", "ctx.db"] },
       ],
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
     },
   },
   {

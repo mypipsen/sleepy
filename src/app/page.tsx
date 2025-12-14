@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, Suspense, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Stack } from "@mui/material";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { Suspense, useCallback,useState } from "react";
 
-import { Story } from "~/app/_components/story";
 import { Adventure } from "~/app/_components/adventure";
-import { Sidebar } from "~/app/_components/sidebar";
-import { UnauthenticatedView } from "~/app/_components/unauthenticated-view";
 import { AppHeader } from "~/app/_components/shared/app-header";
+import { Sidebar } from "~/app/_components/sidebar";
+import { Story } from "~/app/_components/story";
+import { UnauthenticatedView } from "~/app/_components/unauthenticated-view";
 
 function HomeContent() {
   const { data: session } = useSession();

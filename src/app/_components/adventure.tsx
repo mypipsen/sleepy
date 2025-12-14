@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import { Stack } from "@mui/material";
+import { useCallback,useState } from "react";
+
 import { api } from "~/trpc/react";
+
+import { ChoiceButton } from "./shared/choice-button";
 import { MessageInput } from "./shared/message-input";
 import { MessageList } from "./shared/message-list";
-import { ChoiceButton } from "./shared/choice-button";
 
 type Message = {
   id: string;

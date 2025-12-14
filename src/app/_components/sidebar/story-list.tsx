@@ -1,8 +1,10 @@
 "use client";
 
 import { List, Typography } from "@mui/material";
-import { StoryListItem } from "./story-list-item";
+
 import type { RouterOutputs } from "~/trpc/react";
+
+import { StoryListItem } from "./story-list-item";
 
 type StoryListProps = {
   stories: RouterOutputs["story"]["getAll"] | undefined;

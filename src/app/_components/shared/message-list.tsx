@@ -1,9 +1,10 @@
 "use client";
 
 import { Paper, Stack } from "@mui/material";
-import { Message } from "./message";
-import { MessageLoadingSkeleton } from "./loading-skeleton";
+
 import { LoadingIndicator } from "./loading-indicator";
+import { MessageLoadingSkeleton } from "./loading-skeleton";
+import { Message } from "./message";
 
 type MessageType = {
   id: string;

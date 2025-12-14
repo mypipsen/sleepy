@@ -1,9 +1,9 @@
-import { adventureRouter } from "./routers/adventureRouter";
-import { storyRouter } from "~/server/api/routers/storyRouter";
 import { instructionRouter } from "~/server/api/routers/instructionRouter";
+import { storyRouter } from "~/server/api/routers/storyRouter";
 import { transcribeRouter } from "~/server/api/routers/transcribeRouter";
-
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+
+import { adventureRouter } from "./routers/adventureRouter";
 
 /**
  * This is the primary router for your server.

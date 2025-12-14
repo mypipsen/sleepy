@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+
 import { db } from "./index";
 import { users } from "./schema";
 

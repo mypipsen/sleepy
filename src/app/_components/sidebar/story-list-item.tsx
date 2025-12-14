@@ -1,12 +1,13 @@
 "use client";
 
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
+  IconButton,
   ListItem,
   ListItemButton,
   ListItemText,
-  IconButton,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+
 import type { RouterOutputs } from "~/trpc/react";
 
 type StoryListItemProps = {
