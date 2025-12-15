@@ -3,11 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import {
-  adventures,
-  adventureSegments,
-  instructions,
-} from "~/server/db/schema";
+import { adventures, instructions } from "~/server/db/schema";
 import { streamAdventure } from "~/server/services/adventure";
 import { createImage } from "~/server/services/image";
 
@@ -36,42 +32,7 @@ export const adventureRouter = createTRPCRouter({
         where: eq(instructions.userId, ctx.session.user.id),
       });
 
-      const stream = await streamAdventure({ adventure, instruction });
-
-      let text = "";
-      let choices: Array<string | undefined> = [];
-      let choiceType: "story" | "image" = "story";
-
-      for await (const partialObject of stream.partialObjectStream) {
-        if (partialObject.text !== undefined) {
-          const newText = partialObject.text.slice(text.length);
-          text = partialObject.text;
-          if (newText) {
-            yield { type: "text" as const, content: newText };
-          }
-        }
-
-        if (Array.isArray(partialObject.choices)) {
-          choices = partialObject.choices;
-        }
-
-        if (partialObject.choiceType) {
-          choiceType = partialObject.choiceType;
-        }
-      }
-
-      if (text) {
-        await ctx.db.insert(adventureSegments).values({
-          adventureId: adventure.id,
-          text,
-        });
-      }
-
-      yield {
-        type: "choices" as const,
-        content: choices,
-        choiceType,
-      };
+      yield* streamAdventure({ adventure, instruction });
     }),
 
   chat: protectedProcedure
@@ -102,47 +63,11 @@ export const adventureRouter = createTRPCRouter({
       });
 
       if (input.choiceType === "story") {
-        const stream = await streamAdventure({
+        yield* streamAdventure({
           adventure,
           instruction,
           lastChoice: input.choice,
         });
-
-        let text = "";
-        let choices: Array<string | undefined> = [];
-        let choiceType: "story" | "image" = "story";
-
-        for await (const partialObject of stream.partialObjectStream) {
-          if (partialObject.text !== undefined) {
-            const newText = partialObject.text.slice(text.length);
-            text = partialObject.text;
-            if (newText) {
-              yield { type: "text" as const, content: newText };
-            }
-          }
-
-          if (Array.isArray(partialObject.choices)) {
-            choices = partialObject.choices;
-          }
-
-          if (partialObject.choiceType) {
-            choiceType = partialObject.choiceType;
-          }
-        }
-
-        if (text) {
-          await ctx.db.insert(adventureSegments).values({
-            adventureId: input.adventureId,
-            text,
-            choice: input.choice,
-          });
-        }
-
-        yield {
-          type: "choices" as const,
-          content: choices,
-          choiceType,
-        };
       }
 
       if (input.choiceType === "image") {

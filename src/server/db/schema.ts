@@ -91,10 +91,10 @@ export const stories = pgTable(
   "story",
   (d) => ({
     id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    prompt: d.text(),
-    text: d.text(),
-    title: d.text(),
-    imagePrompt: d.text(),
+    prompt: d.text().notNull(),
+    text: d.text().notNull(),
+    title: d.text().notNull(),
+    imagePrompt: d.text().notNull(),
     imageUrl: d.text(),
     userId: d
       .varchar({ length: 255 })

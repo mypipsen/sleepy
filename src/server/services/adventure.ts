@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { db } from "~/server/db/index";
 import {
-  type adventures,
+  adventures,
   adventureSegments,
   type instructions,
 } from "~/server/db/schema";
@@ -15,6 +15,12 @@ const adventureSchema = z.object({
     .string()
     .describe(
       "The narrative text for this part of the adventure. Do not include the available choices in this text.",
+    ),
+  title: z
+    .string()
+    .optional()
+    .describe(
+      "A title for the adventure. This should only be filled when its the start of the adventure.",
     ),
   choices: z
     .array(z.string())
@@ -40,7 +46,7 @@ function getPrompt({
   instruction?: typeof instructions.$inferSelect;
 }) {
   const currentSegment = segments.length + 1;
-  const storySegments = 6;
+  const storySegments = 5;
   const imagePromptSegment = storySegments + 1;
 
   return `
@@ -80,7 +86,17 @@ Absolute rules:
 - Use emojis when they naturally fit the story.
 - Do not plan for or imply any future segments beyond this response.
 
+Story enrichment rules (apply to all story segments):
+- Introduce one recurring magical object, creature, or mystery early in the story.
+- This element must subtly influence multiple segments.
+- Each new segment should slightly raise tension, curiosity, or stakes.
+- At least one segment must include a surprising but age-appropriate twist.
+- The final story segment must resolve the recurring element in a satisfying way.
+
 Segment rules:
+
+If currentSegment is exactly 1:
+- Set the title in the output.
 
 If currentSegment is less than or equal to ${storySegments}:
 - Write a story segment of 2 to 4 sentences.
@@ -114,7 +130,7 @@ Output format:
 `;
 }
 
-export async function streamAdventure({
+export async function* streamAdventure({
   adventure,
   instruction,
   lastChoice,
@@ -128,10 +144,57 @@ export async function streamAdventure({
     orderBy: (segments, { asc }) => [asc(segments.id)],
   });
 
-  return streamObject({
+  const stream = streamObject({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
     model: openai("gpt-4.1") as any,
     prompt: getPrompt({ adventure, segments, lastChoice, instruction }),
     schema: adventureSchema,
   });
+
+  let text = "";
+  let title = "";
+  let choices: Array<string | undefined> = [];
+  let choiceType: "story" | "image" = "story";
+
+  for await (const partialObject of stream.partialObjectStream) {
+    if (partialObject.text !== undefined) {
+      const newText = partialObject.text.slice(text.length);
+      text = partialObject.text;
+      if (newText) {
+        yield { type: "text" as const, content: newText };
+      }
+    }
+
+    if (Array.isArray(partialObject.choices)) {
+      choices = partialObject.choices;
+    }
+
+    if (partialObject.choiceType) {
+      choiceType = partialObject.choiceType;
+    }
+
+    if (partialObject.title !== undefined) {
+      title = partialObject.title;
+      yield { type: "title" as const, content: title };
+
+      await db
+        .update(adventures)
+        .set({ title })
+        .where(eq(adventures.id, adventure.id));
+    }
+  }
+
+  if (text) {
+    await db.insert(adventureSegments).values({
+      adventureId: adventure.id,
+      text,
+      choice: lastChoice,
+    });
+  }
+
+  yield {
+    type: "choices" as const,
+    content: choices,
+    choiceType,
+  };
 }

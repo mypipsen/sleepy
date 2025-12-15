@@ -2,7 +2,8 @@ import { openai } from "@ai-sdk/openai";
 import { streamObject } from "ai";
 import { z } from "zod";
 
-import type { instructions } from "~/server/db/schema";
+import { db } from "~/server/db/index";
+import { type instructions, stories } from "~/server/db/schema";
 
 const storySchema = z.object({
   title: z.string().describe("A title for the story"),
@@ -38,18 +39,60 @@ When the user gives inspiration for a new story, respond with the full bedtime t
 `;
 }
 
-export async function streamStory({
+export async function* streamStory({
   prompt,
   instruction,
+  userId,
 }: {
   prompt: string;
   instruction?: typeof instructions.$inferSelect;
+  userId: string;
 }) {
-  return streamObject({
+  const stream = streamObject({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
     model: openai("gpt-4.1") as any,
     prompt,
     system: getSystemPrompt(instruction?.text),
     schema: storySchema,
   });
+
+  let text = "";
+  let title = "";
+  let imagePrompt = "";
+
+  for await (const partialObject of stream.partialObjectStream) {
+    if (partialObject.text !== undefined) {
+      const newText = partialObject.text.slice(text.length);
+      text = partialObject.text;
+      if (newText) {
+        yield { type: "text" as const, content: newText };
+      }
+    }
+
+    if (partialObject.title !== undefined) {
+      title = partialObject.title;
+      yield { type: "title" as const, content: title };
+    }
+
+    if (partialObject.imagePrompt !== undefined) {
+      imagePrompt = partialObject.imagePrompt;
+    }
+  }
+
+  const [story] = await db
+    .insert(stories)
+    .values({
+      prompt,
+      title,
+      text,
+      imagePrompt,
+      userId,
+    })
+    .returning();
+
+  if (!story) {
+    throw new Error("Failed to create story");
+  }
+
+  return { story };
 }

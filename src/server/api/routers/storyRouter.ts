@@ -14,51 +14,16 @@ export const storyRouter = createTRPCRouter({
         where: eq(instructions.userId, ctx.session.user.id),
       });
 
-      const stream = await streamStory({
+      const { story } = yield* streamStory({
         prompt: input.prompt,
         instruction,
+        userId: ctx.session.user.id,
       });
-
-      let text = "";
-      let title = "";
-      let imagePrompt = "";
-
-      for await (const partialObject of stream.partialObjectStream) {
-        if (partialObject.text !== undefined) {
-          const newText = partialObject.text.slice(text.length);
-          text = partialObject.text;
-          if (newText) {
-            yield { type: "text" as const, content: newText };
-          }
-        }
-        if (partialObject.title !== undefined) {
-          title = partialObject.title;
-          yield { type: "title" as const, content: title };
-        }
-        if (partialObject.imagePrompt !== undefined) {
-          imagePrompt = partialObject.imagePrompt;
-        }
-      }
-
-      const [story] = await ctx.db
-        .insert(stories)
-        .values({
-          prompt: input.prompt,
-          title,
-          text,
-          imagePrompt,
-          userId: ctx.session.user.id,
-        })
-        .returning();
-
-      if (!story) {
-        return;
-      }
 
       yield { type: "storyId" as const, content: story.id };
 
       const imageUrl = await createImage({
-        prompt: imagePrompt,
+        prompt: story.imagePrompt,
         instruction,
       });
 
