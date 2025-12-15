@@ -3,7 +3,11 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { adventures, adventureSegments, instructions } from "~/server/db/schema";
+import {
+  adventures,
+  adventureSegments,
+  instructions,
+} from "~/server/db/schema";
 import { streamAdventure } from "~/server/services/adventure";
 import { createImage } from "~/server/services/image";
 

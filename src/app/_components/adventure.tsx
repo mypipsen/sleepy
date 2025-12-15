@@ -6,6 +6,7 @@ import { useCallback, useState } from "react";
 import { api } from "~/trpc/react";
 
 import { ChoiceButton } from "./shared/choice-button";
+import { MessageLoadingSkeleton } from "./shared/loading-skeleton";
 import { MessageInput } from "./shared/message-input";
 import { MessageList } from "./shared/message-list";
 import { StoryImage } from "./shared/story-image";
@@ -48,13 +49,6 @@ export function Adventure({
 
   // Load existing adventure if available
   if (existingAdventure && messages.length === 0) {
-    // Simpler approach:
-    // PROMPT (User)
-    // SEGMENT 0 Text (Assistant)
-    // SEGMENT 0 Choice (User) -> if exists
-    // SEGMENT 1 Text (Assistant)
-    // ...
-
     const newMessages: Message[] = [];
     newMessages.push({
       id: `prompt-${existingAdventure.id}`,
@@ -73,7 +67,7 @@ export function Adventure({
         newMessages.push({
           id: `choice-${segment.id}`,
           role: "user",
-          content: segment.choice, // This was the user's choice
+          content: segment.choice,
         });
       }
     });
@@ -179,7 +173,7 @@ export function Adventure({
 
   if (messages.length === 0) {
     if (!!initialAdventureId && !existingAdventure) {
-      return <div>Loading adventure...</div>;
+      return <MessageLoadingSkeleton />;
     }
 
     return (

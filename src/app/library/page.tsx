@@ -20,6 +20,7 @@ import { api } from "~/trpc/react";
 
 import { AppHeader } from "../_components/shared/app-header";
 import { DeleteDialog } from "../_components/shared/delete-dialog";
+import { LibrarySkeleton } from "../_components/shared/loading-skeleton";
 import { Sidebar } from "../_components/sidebar";
 
 export default function LibraryPage() {
@@ -103,7 +104,7 @@ export default function LibraryPage() {
           </Typography>
 
           {isLoading ? (
-            <Typography>Loading library...</Typography>
+            <LibrarySkeleton />
           ) : (
             <Grid container spacing={3}>
               {combinedItems.map((item) => (

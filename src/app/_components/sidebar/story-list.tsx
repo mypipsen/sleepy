@@ -1,5 +1,7 @@
 import { List, ListItemButton, ListItemText, Typography } from "@mui/material";
 
+import { SidebarSkeleton } from "../shared/loading-skeleton";
+
 type StoryItem = {
   id: number;
   title?: string | null;
@@ -17,7 +19,7 @@ type StoryListProps = {
 
 export function StoryList({ stories, onSelect, isLoading }: StoryListProps) {
   if (isLoading) {
-    return <Typography sx={{ p: 2 }}>Loading...</Typography>;
+    return <SidebarSkeleton />;
   }
 
   if (!stories?.length) {
