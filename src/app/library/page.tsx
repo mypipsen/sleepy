@@ -25,11 +25,17 @@ import { Sidebar } from "../_components/sidebar";
 export default function LibraryPage() {
   const theme = useTheme();
   const utils = api.useUtils();
-  const { data: stories, isLoading } = api.story.getAll.useQuery();
+  const { data: stories, isLoading: storiesLoading } =
+    api.story.getAll.useQuery();
+  const { data: adventures, isLoading: adventuresLoading } =
+    api.adventure.getAll.useQuery();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [storyToDelete, setStoryToDelete] = useState<number | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{
+    id: number;
+    type: "story" | "adventure";
+  } | null>(null);
 
   const router = useRouter(); // Initialize router
 
@@ -37,20 +43,39 @@ export default function LibraryPage() {
     onSuccess: async () => {
       await utils.story.getAll.invalidate();
       setDeleteDialogOpen(false);
-      setStoryToDelete(null);
+      setItemToDelete(null);
     },
   });
 
-  const handleDeleteClick = (id: number) => {
-    setStoryToDelete(id);
+  const deleteAdventure = api.adventure.delete.useMutation({
+    onSuccess: async () => {
+      await utils.adventure.getAll.invalidate();
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    },
+  });
+
+  const handleDeleteClick = (id: number, type: "story" | "adventure") => {
+    setItemToDelete({ id, type });
     setDeleteDialogOpen(true);
   };
 
   const confirmDelete = () => {
-    if (storyToDelete) {
-      deleteStory.mutate({ id: storyToDelete });
+    if (itemToDelete) {
+      if (itemToDelete.type === "story") {
+        deleteStory.mutate({ id: itemToDelete.id });
+      } else {
+        deleteAdventure.mutate({ id: itemToDelete.id });
+      }
     }
   };
+
+  const combinedItems = [
+    ...(stories?.map((s) => ({ ...s, type: "story" as const })) ?? []),
+    ...(adventures?.map((a) => ({ ...a, type: "adventure" as const })) ?? []),
+  ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+  const isLoading = storiesLoading || adventuresLoading;
 
   return (
     <Box
@@ -81,8 +106,8 @@ export default function LibraryPage() {
             <Typography>Loading library...</Typography>
           ) : (
             <Grid container spacing={3}>
-              {stories?.map((story) => (
-                <Grid size={{ xs: 6 }} key={story.id}>
+              {combinedItems.map((item) => (
+                <Grid size={{ xs: 6 }} key={`${item.type}-${item.id}`}>
                   <Card
                     sx={{
                       height: "100%",
@@ -97,7 +122,13 @@ export default function LibraryPage() {
                     }}
                   >
                     <CardActionArea
-                      onClick={() => router.push(`/?story=${story.id}`)}
+                      onClick={() =>
+                        router.push(
+                          item.type === "story"
+                            ? `/?story=${item.id}`
+                            : `/?adventure=${item.id}`,
+                        )
+                      }
                       sx={{
                         flexGrow: 1,
                         display: "flex",
@@ -106,12 +137,12 @@ export default function LibraryPage() {
                         height: "100%",
                       }}
                     >
-                      {story.imageUrl && (
+                      {item.imageUrl && (
                         <CardMedia
                           component="img"
                           height="200"
-                          image={story.imageUrl}
-                          alt={story.title ?? "Story image"}
+                          image={item.imageUrl}
+                          alt={item.title ?? "Item image"}
                           sx={{ objectFit: "cover", width: "100%" }}
                         />
                       )}
@@ -129,7 +160,10 @@ export default function LibraryPage() {
                             component="h2"
                             sx={{ lineHeight: 1.3, fontWeight: "bold" }}
                           >
-                            {story.title ?? "Untitled Story"}
+                            {item.title ??
+                              (item.type === "adventure"
+                                ? item.prompt
+                                : "Untitled Story")}
                           </Typography>
                         </Box>
 
@@ -139,7 +173,8 @@ export default function LibraryPage() {
                           display="block"
                           gutterBottom
                         >
-                          {story.createdAt.toLocaleDateString()}
+                          {item.type === "adventure" && "Adventure • "}
+                          {item.createdAt.toLocaleDateString()}
                         </Typography>
 
                         <Typography
@@ -153,7 +188,7 @@ export default function LibraryPage() {
                             mb: 2,
                           }}
                         >
-                          {story.text}
+                          {item.type === "story" ? item.text : item.prompt}
                         </Typography>
                       </CardContent>
                     </CardActionArea>
@@ -163,7 +198,7 @@ export default function LibraryPage() {
                       size="small"
                       onClick={(e) => {
                         e.stopPropagation(); // Prevent card click
-                        handleDeleteClick(story.id);
+                        handleDeleteClick(item.id, item.type);
                       }}
                       sx={{
                         position: "absolute",
@@ -185,14 +220,14 @@ export default function LibraryPage() {
                   </Card>
                 </Grid>
               ))}
-              {stories?.length === 0 && (
+              {combinedItems.length === 0 && (
                 <Grid size={{ xs: 12 }}>
                   <Typography
                     variant="body1"
                     color="text.secondary"
                     align="center"
                   >
-                    No stories found. Create one to see it here!
+                    No items found. Create one to see it here!
                   </Typography>
                 </Grid>
               )}

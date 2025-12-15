@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { adventures, instructions } from "~/server/db/schema";
+import { adventures, adventureSegments, instructions } from "~/server/db/schema";
 import { streamAdventure } from "~/server/services/adventure";
 import { createImage } from "~/server/services/image";
 
@@ -85,5 +85,48 @@ export const adventureRouter = createTRPCRouter({
             .where(eq(adventures.id, input.adventureId));
         }
       }
+    }),
+
+  getAll: protectedProcedure
+    .input(z.object({ limit: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.query.adventures.findMany({
+        where: eq(adventures.userId, ctx.session.user.id),
+        orderBy: (adventures, { desc }) => [desc(adventures.createdAt)],
+        limit: input?.limit,
+      });
+    }),
+
+  getById: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.query.adventures.findFirst({
+        where: and(
+          eq(adventures.id, input.id),
+          eq(adventures.userId, ctx.session.user.id),
+        ),
+        with: {
+          segments: {
+            orderBy: (segments, { asc }) => [asc(segments.createdAt)],
+          },
+        },
+      });
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .delete(adventureSegments)
+        .where(eq(adventureSegments.adventureId, input.id));
+
+      await ctx.db
+        .delete(adventures)
+        .where(
+          and(
+            eq(adventures.id, input.id),
+            eq(adventures.userId, ctx.session.user.id),
+          ),
+        );
     }),
 });

@@ -1,14 +1,17 @@
 import { List, ListItemButton, ListItemText, Typography } from "@mui/material";
 
-type Story = {
+type StoryItem = {
   id: number;
-  title: string | null;
+  title?: string | null;
+  text?: string | null;
+  prompt: string;
   createdAt: Date;
+  type: "story" | "adventure";
 };
 
 type StoryListProps = {
-  stories: Story[] | undefined;
-  onSelect: (id: number) => void;
+  stories: StoryItem[] | undefined;
+  onSelect: (id: number, type: "story" | "adventure") => void;
   isLoading: boolean;
 };
 
@@ -20,7 +23,7 @@ export function StoryList({ stories, onSelect, isLoading }: StoryListProps) {
   if (!stories?.length) {
     return (
       <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>
-        No stories yet.
+        No items yet.
       </Typography>
     );
   }
@@ -28,10 +31,26 @@ export function StoryList({ stories, onSelect, isLoading }: StoryListProps) {
   return (
     <List dense>
       {stories.map((story) => (
-        <ListItemButton key={story.id} onClick={() => onSelect(story.id)}>
+        <ListItemButton
+          key={`${story.type}-${story.id}`}
+          onClick={() => onSelect(story.id, story.type)}
+        >
           <ListItemText
-            primary={story.title ?? "Untitled Story"}
-            secondary={story.createdAt.toLocaleDateString()}
+            primary={
+              story.type === "story"
+                ? (story.title ?? "Untitled Story")
+                : (story.title ?? story.prompt ?? "Untitled Adventure")
+            }
+            secondary={
+              <Typography
+                variant="caption"
+                component="span"
+                color="text.secondary"
+              >
+                {story.type === "adventure" && "Adventure • "}
+                {story.createdAt.toLocaleDateString()}
+              </Typography>
+            }
             primaryTypographyProps={{
               noWrap: true,
               style: { fontWeight: 500 },

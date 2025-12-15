@@ -21,9 +21,19 @@ function HomeContent() {
   const storyIdParam = searchParams.get("story");
   const selectedStoryId = storyIdParam ? parseInt(storyIdParam, 10) : null;
 
+  const adventureIdParam = searchParams.get("adventure");
+  const selectedAdventureId = adventureIdParam
+    ? parseInt(adventureIdParam, 10)
+    : undefined;
+
   // Switch to story mode if a story is selected
   if (selectedStoryId && mode !== "story") {
     setMode("story");
+  }
+
+  // Switch to adventure mode if an adventure is selected
+  if (selectedAdventureId && mode !== "adventure") {
+    setMode("adventure");
   }
 
   if (!session) {
@@ -57,6 +67,7 @@ function HomeContent() {
           />
         ) : (
           <Adventure
+            adventureId={selectedAdventureId}
             mode={mode}
             onModeChange={(_mode) => {
               if (_mode !== "adventure") {

@@ -17,13 +17,20 @@ type Message = {
 };
 
 type AdventureProps = {
+  adventureId?: number;
   mode?: "story" | "adventure";
   onModeChange?: (mode: "story" | "adventure") => void;
 };
 
-export function Adventure({ mode, onModeChange }: AdventureProps) {
+export function Adventure({
+  adventureId: initialAdventureId,
+  mode,
+  onModeChange,
+}: AdventureProps) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [adventureId, setAdventureId] = useState<number | undefined>(undefined);
+  const [adventureId, setAdventureId] = useState<number | undefined>(
+    initialAdventureId,
+  );
 
   const [initialPrompt, setInitialPrompt] = useState("");
   const [choices, setChoices] = useState<string[]>([]);
@@ -33,6 +40,48 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
 
   const startAdventure = api.adventure.start.useMutation();
   const chatAdventure = api.adventure.chat.useMutation();
+
+  const { data: existingAdventure } = api.adventure.getById.useQuery(
+    { id: initialAdventureId! },
+    { enabled: !!initialAdventureId },
+  );
+
+  // Load existing adventure if available
+  if (existingAdventure && messages.length === 0) {
+    // Simpler approach:
+    // PROMPT (User)
+    // SEGMENT 0 Text (Assistant)
+    // SEGMENT 0 Choice (User) -> if exists
+    // SEGMENT 1 Text (Assistant)
+    // ...
+
+    const newMessages: Message[] = [];
+    newMessages.push({
+      id: `prompt-${existingAdventure.id}`,
+      role: "user",
+      content: existingAdventure.prompt,
+    });
+
+    existingAdventure.segments.forEach((segment) => {
+      newMessages.push({
+        id: `seg-${segment.id}`,
+        role: "assistant",
+        content: segment.text,
+      });
+
+      if (segment.choice) {
+        newMessages.push({
+          id: `choice-${segment.id}`,
+          role: "user",
+          content: segment.choice, // This was the user's choice
+        });
+      }
+    });
+
+    setMessages(newMessages);
+    setAdventureId(existingAdventure.id);
+    setGeneratedImage(existingAdventure.imageUrl);
+  }
 
   const handleInteract = useCallback(
     async (params: {
@@ -63,13 +112,16 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
       try {
         let result;
 
-        if (!adventureId) {
+        // Use state adventureId or prop adventureId
+        const currentAdventureId = adventureId ?? initialAdventureId;
+
+        if (!currentAdventureId) {
           result = await startAdventure.mutateAsync({
             prompt: currentPrompt,
           });
         } else {
           result = await chatAdventure.mutateAsync({
-            adventureId,
+            adventureId: currentAdventureId,
             choice: userContent,
             choiceType: params.choiceType ?? "story",
           });
@@ -107,7 +159,14 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
         setIsGenerating(false);
       }
     },
-    [startAdventure, chatAdventure, initialPrompt, isGenerating, adventureId],
+    [
+      startAdventure,
+      chatAdventure,
+      initialPrompt,
+      isGenerating,
+      adventureId,
+      initialAdventureId,
+    ],
   );
 
   const handleStart = (prompt: string) => {
@@ -119,6 +178,10 @@ export function Adventure({ mode, onModeChange }: AdventureProps) {
   };
 
   if (messages.length === 0) {
+    if (!!initialAdventureId && !existingAdventure) {
+      return <div>Loading adventure...</div>;
+    }
+
     return (
       <MessageInput
         onSubmit={handleStart}

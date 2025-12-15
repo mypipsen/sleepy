@@ -31,9 +31,15 @@ type SidebarProps = {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { data: session } = useSession();
-  const { data: recentStories, isLoading } = api.story.getAll.useQuery({
-    limit: 5,
-  });
+  const { data: recentStories, isLoading: contentLoading } =
+    api.story.getAll.useQuery({
+      limit: 5,
+    });
+  const { data: recentAdventures, isLoading: adventuresLoading } =
+    api.adventure.getAll.useQuery({
+      limit: 5,
+    });
+
   const router = useRouter();
 
   const handleLogout = useCallback(async () => {
@@ -57,12 +63,24 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   }, [router, onClose]);
 
   const handleStorySelect = useCallback(
-    (id: number) => {
-      router.push(`/?story=${id}`);
+    (id: number, type: "story" | "adventure") => {
+      if (type === "story") {
+        router.push(`/?story=${id}`);
+      } else {
+        router.push(`/?adventure=${id}`);
+      }
       onClose();
     },
     [router, onClose],
   );
+
+  const combinedItems = [
+    ...(recentStories?.map((s) => ({ ...s, type: "story" as const })) ?? []),
+    ...(recentAdventures?.map((a) => ({ ...a, type: "adventure" as const })) ??
+      []),
+  ]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 5);
 
   return (
     <Drawer
@@ -111,12 +129,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               color: "text.secondary",
             }}
           >
-            Recent Stories
+            Recent
           </Typography>
           <StoryList
-            stories={recentStories}
+            stories={combinedItems}
             onSelect={handleStorySelect}
-            isLoading={isLoading}
+            isLoading={contentLoading || adventuresLoading}
           />
         </Stack>
         <Divider />
