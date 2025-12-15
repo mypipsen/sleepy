@@ -1,7 +1,7 @@
 "use client";
 
 import { Stack } from "@mui/material";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { api } from "~/trpc/react";
 
@@ -28,6 +28,7 @@ export function Adventure({
   mode,
   onModeChange,
 }: AdventureProps) {
+  const utils = api.useUtils();
   const [messages, setMessages] = useState<Message[]>([]);
   const [adventureId, setAdventureId] = useState<number | undefined>(
     initialAdventureId,
@@ -39,6 +40,11 @@ export function Adventure({
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Sync internal ID with prop ID
+  useEffect(() => {
+    setAdventureId(initialAdventureId);
+  }, [initialAdventureId]);
+
   const startAdventure = api.adventure.start.useMutation();
   const chatAdventure = api.adventure.chat.useMutation();
 
@@ -48,34 +54,43 @@ export function Adventure({
   );
 
   // Load existing adventure if available
-  if (existingAdventure && messages.length === 0) {
-    const newMessages: Message[] = [];
-    newMessages.push({
-      id: `prompt-${existingAdventure.id}`,
-      role: "user",
-      content: existingAdventure.prompt,
-    });
-
-    existingAdventure.segments.forEach((segment) => {
+  useEffect(() => {
+    if (initialAdventureId && existingAdventure) {
+      const newMessages: Message[] = [];
       newMessages.push({
-        id: `seg-${segment.id}`,
-        role: "assistant",
-        content: segment.text,
+        id: `prompt-${existingAdventure.id}`,
+        role: "user",
+        content: existingAdventure.prompt,
       });
 
-      if (segment.choice) {
+      existingAdventure.segments.forEach((segment) => {
         newMessages.push({
-          id: `choice-${segment.id}`,
-          role: "user",
-          content: segment.choice,
+          id: `seg-${segment.id}`,
+          role: "assistant",
+          content: segment.text,
         });
-      }
-    });
 
-    setMessages(newMessages);
-    setAdventureId(existingAdventure.id);
-    setGeneratedImage(existingAdventure.imageUrl);
-  }
+        if (segment.choice) {
+          newMessages.push({
+            id: `choice-${segment.id}`,
+            role: "user",
+            content: segment.choice,
+          });
+        }
+      });
+
+      setMessages(newMessages);
+      setAdventureId(existingAdventure.id);
+      setGeneratedImage(existingAdventure.imageUrl);
+      setChoices([]);
+    } else if (!initialAdventureId) {
+      // Reset state when navigating to new adventure
+      setMessages([]);
+      setGeneratedImage(null);
+      setChoices([]);
+      setInitialPrompt("");
+    }
+  }, [initialAdventureId, existingAdventure]);
 
   const handleInteract = useCallback(
     async (params: {
@@ -146,7 +161,8 @@ export function Adventure({
           }
         }
 
-        // Append the new segment to the list
+        // Refresh the sidebar history
+        await utils.adventure.getAll.invalidate();
       } catch (error) {
         console.error("Failed to generate adventure:", error);
       } finally {
@@ -160,6 +176,7 @@ export function Adventure({
       isGenerating,
       adventureId,
       initialAdventureId,
+      utils,
     ],
   );
 
