@@ -3,7 +3,7 @@
 import { Stack } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Suspense, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 
 import { Adventure } from "~/app/_components/adventure";
 import { Coloring } from "~/app/_components/coloring";
@@ -18,6 +18,7 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mode, setMode] = useState<"story" | "adventure" | "coloring">("story");
+  const [resetKey, setResetKey] = useState(0);
 
   const storyIdParam = searchParams.get("story");
   const selectedStoryId = storyIdParam ? parseInt(storyIdParam, 10) : null;
@@ -37,6 +38,12 @@ function HomeContent() {
     setMode("adventure");
   }
 
+  const handleReset = useCallback(() => {
+    setMode("story");
+    setResetKey((prev) => prev + 1);
+    router.push("/");
+  }, [router]);
+
   if (!session) {
     return <UnauthenticatedView />;
   }
@@ -50,13 +57,21 @@ function HomeContent() {
         mx: "auto",
       }}
     >
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onNewStoryClick={handleReset}
+      />
 
-      <AppHeader onMenuClick={() => setIsSidebarOpen(true)} />
+      <AppHeader
+        onMenuClick={() => setIsSidebarOpen(true)}
+        onLogoClick={handleReset}
+      />
 
       <Stack component="main">
         {mode === "story" ? (
           <Story
+            key={`story-${selectedStoryId ?? "new"}-${resetKey}`}
             storyId={selectedStoryId}
             mode={mode}
             onModeChange={(_mode) => {
@@ -68,6 +83,7 @@ function HomeContent() {
           />
         ) : mode === "adventure" ? (
           <Adventure
+            key={`adventure-${selectedAdventureId ?? "new"}-${resetKey}`}
             adventureId={selectedAdventureId}
             mode={mode}
             onModeChange={(_mode) => {
@@ -78,6 +94,7 @@ function HomeContent() {
           />
         ) : (
           <Coloring
+            key={`coloring-${resetKey}`}
             mode={mode}
             onModeChange={(_mode) => {
               if (_mode !== "coloring") {

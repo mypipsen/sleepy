@@ -27,9 +27,10 @@ const drawerWidth = 280;
 type SidebarProps = {
   isOpen: boolean;
   onClose: () => void;
+  onNewStoryClick: () => void;
 };
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, onNewStoryClick }: SidebarProps) {
   const { data: session } = useSession();
   const { data: recentStories, isLoading: contentLoading } =
     api.story.getAll.useQuery({
@@ -57,10 +58,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   }, [router, onClose]);
 
   const handleNewStory = useCallback(() => {
-    // Assuming new story is home page or /story
-    router.push("/");
+    onNewStoryClick();
     onClose();
-  }, [router, onClose]);
+  }, [onNewStoryClick, onClose]);
 
   const handleStorySelect = useCallback(
     (id: number, type: "story" | "adventure") => {
