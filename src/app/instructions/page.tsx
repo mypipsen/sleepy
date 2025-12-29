@@ -41,9 +41,16 @@ export default function InstructionsPage() {
         mx: "auto",
       }}
     >
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onNewStoryClick={() => router.push("/")}
+      />
 
-      <AppHeader onMenuClick={() => setIsSidebarOpen(true)} />
+      <AppHeader
+        onMenuClick={() => setIsSidebarOpen(true)}
+        onLogoClick={() => router.push("/")}
+      />
 
       <Box component="main" sx={{ p: 2, pb: 4 }}>
         <Container maxWidth="md">

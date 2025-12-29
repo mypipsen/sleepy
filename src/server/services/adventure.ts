@@ -130,6 +130,15 @@ Output format:
 `;
 }
 
+type AdventureYield =
+  | { type: "text"; content: string }
+  | { type: "title"; content: string }
+  | {
+      type: "choices";
+      content: (string | undefined)[];
+      choiceType: "story" | "image";
+    };
+
 export async function* streamAdventure({
   adventure,
   instruction,
@@ -138,7 +147,7 @@ export async function* streamAdventure({
   adventure: typeof adventures.$inferSelect;
   instruction?: typeof instructions.$inferSelect;
   lastChoice?: string;
-}) {
+}): AsyncGenerator<AdventureYield, void, unknown> {
   const segments = await db.query.adventureSegments.findMany({
     where: eq(adventureSegments.adventureId, adventure.id),
     orderBy: (segments, { asc }) => [asc(segments.id)],

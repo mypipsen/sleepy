@@ -39,6 +39,10 @@ When the user gives inspiration for a new story, respond with the full bedtime t
 `;
 }
 
+type StoryYield =
+  | { type: "text"; content: string }
+  | { type: "title"; content: string };
+
 export async function* streamStory({
   prompt,
   instruction,
@@ -47,7 +51,11 @@ export async function* streamStory({
   prompt: string;
   instruction?: typeof instructions.$inferSelect;
   userId: string;
-}) {
+}): AsyncGenerator<
+  StoryYield,
+  { story: typeof stories.$inferSelect },
+  unknown
+> {
   const stream = streamObject({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
     model: openai("gpt-4.1") as any,

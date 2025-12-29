@@ -12,11 +12,20 @@ const driveRight = keyframes`
 `;
 
 const FireTruck = () => (
-    <Box sx={{ position: "relative", width: 200, height: 60, overflow: "hidden" }}>
-        <Box sx={{ position: "absolute", bottom: 0, left: "50%", animation: `${driveRight} 4s infinite linear` }}>
-            <Typography sx={{ fontSize: 40, lineHeight: 1 }}>🚒</Typography>
-        </Box>
+  <Box
+    sx={{ position: "relative", width: 200, height: 60, overflow: "hidden" }}
+  >
+    <Box
+      sx={{
+        position: "absolute",
+        bottom: 0,
+        left: "50%",
+        animation: `${driveRight} 4s infinite linear`,
+      }}
+    >
+      <Typography sx={{ fontSize: 40, lineHeight: 1 }}>🚒</Typography>
     </Box>
+  </Box>
 );
 
 // 2. ROCKET BLAST OFF
@@ -31,25 +40,32 @@ const twinkle = keyframes`
   50% { opacity: 1; transform: scale(1.2); }
 `;
 const Rocket = () => (
-    <Box sx={{ position: "relative", width: 100, height: 120 }}>
-        {[0, 1, 2].map((i) => (
-            <Typography
-                key={i}
-                sx={{
-                    position: "absolute",
-                    top: i * 30,
-                    left: i * 20,
-                    fontSize: 20,
-                    animation: `${twinkle} ${1 + i * 0.5}s infinite ease-in-out`,
-                }}
-            >
-                ⭐
-            </Typography>
-        ))}
-        <Box sx={{ position: "absolute", bottom: 0, left: "40%", animation: `${flyUp} 2s infinite ease-in` }}>
-            <Typography sx={{ fontSize: 40, lineHeight: 1 }}>🚀</Typography>
-        </Box>
+  <Box sx={{ position: "relative", width: 100, height: 120 }}>
+    {[0, 1, 2].map((i) => (
+      <Typography
+        key={i}
+        sx={{
+          position: "absolute",
+          top: i * 30,
+          left: i * 20,
+          fontSize: 20,
+          animation: `${twinkle} ${1 + i * 0.5}s infinite ease-in-out`,
+        }}
+      >
+        ⭐
+      </Typography>
+    ))}
+    <Box
+      sx={{
+        position: "absolute",
+        bottom: 0,
+        left: "40%",
+        animation: `${flyUp} 2s infinite ease-in`,
+      }}
+    >
+      <Typography sx={{ fontSize: 40, lineHeight: 1 }}>🚀</Typography>
     </Box>
+  </Box>
 );
 
 // 3. UNDERWATER ADVENTURE
@@ -65,27 +81,34 @@ const bubble = keyframes`
   100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
 `;
 const Underwater = () => (
-    <Box sx={{ position: "relative", width: 150, height: 80 }}>
-        {[0, 1, 2].map((i) => (
-            <Typography
-                key={i}
-                sx={{
-                    position: "absolute",
-                    top: 30,
-                    left: 40 + i * 20,
-                    fontSize: 10 + i * 2,
-                    color: "#4FC3F7",
-                    animation: `${bubble} ${2 + i}s infinite ease-in`,
-                    animationDelay: `${i * 0.5}s`,
-                }}
-            >
-                ○
-            </Typography>
-        ))}
-        <Box sx={{ position: "absolute", top: 20, left: "30%", animation: `${swim} 4s infinite ease-in-out` }}>
-            <Typography sx={{ fontSize: 40, lineHeight: 1 }}>🐠</Typography>
-        </Box>
+  <Box sx={{ position: "relative", width: 150, height: 80 }}>
+    {[0, 1, 2].map((i) => (
+      <Typography
+        key={i}
+        sx={{
+          position: "absolute",
+          top: 30,
+          left: 40 + i * 20,
+          fontSize: 10 + i * 2,
+          color: "#4FC3F7",
+          animation: `${bubble} ${2 + i}s infinite ease-in`,
+          animationDelay: `${i * 0.5}s`,
+        }}
+      >
+        ○
+      </Typography>
+    ))}
+    <Box
+      sx={{
+        position: "absolute",
+        top: 20,
+        left: "30%",
+        animation: `${swim} 4s infinite ease-in-out`,
+      }}
+    >
+      <Typography sx={{ fontSize: 40, lineHeight: 1 }}>🐠</Typography>
     </Box>
+  </Box>
 );
 
 // 4. HOT AIR BALLOON
@@ -100,23 +123,30 @@ const cloudPass = keyframes`
   100% { transform: translateX(-100px); opacity: 0; }
 `;
 const Balloon = () => (
-    <Box sx={{ position: "relative", width: 150, height: 100 }}>
-        <Typography
-            sx={{
-                position: "absolute",
-                top: 20,
-                left: 20,
-                fontSize: 30,
-                opacity: 0.8,
-                animation: `${cloudPass} 6s infinite linear`,
-            }}
-        >
-            ☁️
-        </Typography>
-        <Box sx={{ position: "absolute", top: 10, left: "40%", animation: `${float} 4s infinite ease-in-out` }}>
-            <Typography sx={{ fontSize: 50, lineHeight: 1 }}>🎈</Typography>
-        </Box>
+  <Box sx={{ position: "relative", width: 150, height: 100 }}>
+    <Typography
+      sx={{
+        position: "absolute",
+        top: 20,
+        left: 20,
+        fontSize: 30,
+        opacity: 0.8,
+        animation: `${cloudPass} 6s infinite linear`,
+      }}
+    >
+      ☁️
+    </Typography>
+    <Box
+      sx={{
+        position: "absolute",
+        top: 10,
+        left: "40%",
+        animation: `${float} 4s infinite ease-in-out`,
+      }}
+    >
+      <Typography sx={{ fontSize: 50, lineHeight: 1 }}>🎈</Typography>
     </Box>
+  </Box>
 );
 
 // 5. RACE CAR
@@ -127,66 +157,75 @@ const driveFast = keyframes`
   100% { transform: translateX(150px) scaleX(-1); }
 `;
 const RaceCar = () => (
-    <Box sx={{ position: "relative", width: 200, height: 60, overflow: "hidden" }}>
-        <Box sx={{ position: "absolute", bottom: 10, left: "50%", animation: `${driveFast} 2s infinite ease-in-out` }}>
-            <Typography sx={{ fontSize: 40, lineHeight: 1 }}>🏎️</Typography>
-        </Box>
+  <Box
+    sx={{ position: "relative", width: 200, height: 60, overflow: "hidden" }}
+  >
+    <Box
+      sx={{
+        position: "absolute",
+        bottom: 10,
+        left: "50%",
+        animation: `${driveFast} 2s infinite ease-in-out`,
+      }}
+    >
+      <Typography sx={{ fontSize: 40, lineHeight: 1 }}>🏎️</Typography>
     </Box>
+  </Box>
 );
 
 const LOADERS = [
-    { Component: FireTruck, text: "Driving to the rescue..." },
-    { Component: Rocket, text: "Blasting off..." },
-    { Component: Underwater, text: "Swimming under the sea..." },
-    { Component: Balloon, text: "Floating up high..." },
-    { Component: RaceCar, text: "Zooming to the finish..." },
+  { Component: FireTruck, text: "Driving to the rescue..." },
+  { Component: Rocket, text: "Blasting off..." },
+  { Component: Underwater, text: "Swimming under the sea..." },
+  { Component: Balloon, text: "Floating up high..." },
+  { Component: RaceCar, text: "Zooming to the finish..." },
 ];
 
 export function FunLoader() {
-    const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(0);
 
-    useEffect(() => {
-        setIndex(Math.floor(Math.random() * LOADERS.length));
+  useEffect(() => {
+    setIndex(Math.floor(Math.random() * LOADERS.length));
 
-        const interval = setInterval(() => {
-            setIndex((prev) => {
-                let next = Math.floor(Math.random() * LOADERS.length);
-                while (next === prev) {
-                    next = Math.floor(Math.random() * LOADERS.length);
-                }
-                return next;
-            });
-        }, 8000);
+    const interval = setInterval(() => {
+      setIndex((prev) => {
+        let next = Math.floor(Math.random() * LOADERS.length);
+        while (next === prev) {
+          next = Math.floor(Math.random() * LOADERS.length);
+        }
+        return next;
+      });
+    }, 8000);
 
-        return () => clearInterval(interval);
-    }, []);
+    return () => clearInterval(interval);
+  }, []);
 
-    const { Component, text } = LOADERS[index]!;
+  const { Component, text } = LOADERS[index]!;
 
-    return (
-        <Box
-            sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 1,
-                p: 2,
-                minHeight: 120,
-                justifyContent: "center",
-            }}
-        >
-            <Component />
-            <Typography
-                variant="body1"
-                sx={{
-                    color: "text.secondary",
-                    fontWeight: "medium",
-                    mt: 1,
-                    animation: "fadeIn 0.5s ease-in",
-                }}
-            >
-                {text}
-            </Typography>
-        </Box>
-    );
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 1,
+        p: 2,
+        minHeight: 120,
+        justifyContent: "center",
+      }}
+    >
+      <Component />
+      <Typography
+        variant="body1"
+        sx={{
+          color: "text.secondary",
+          fontWeight: "medium",
+          mt: 1,
+          animation: "fadeIn 0.5s ease-in",
+        }}
+      >
+        {text}
+      </Typography>
+    </Box>
+  );
 }

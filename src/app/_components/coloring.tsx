@@ -81,11 +81,7 @@ export function Coloring({ mode, onModeChange }: ColoringProps) {
           },
         }}
       />
-      <MessageList
-        messages={messages}
-        isLoading={false}
-        isPending={false}
-      />
+      <MessageList messages={messages} isLoading={false} isPending={false} />
       <Box id="printable-area">
         <StoryImage
           imageUrl={image}

@@ -87,9 +87,16 @@ export default function LibraryPage() {
         mx: "auto",
       }}
     >
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onNewStoryClick={() => router.push("/")}
+      />
 
-      <AppHeader onMenuClick={() => setSidebarOpen(true)} />
+      <AppHeader
+        onMenuClick={() => setSidebarOpen(true)}
+        onLogoClick={() => router.push("/")}
+      />
 
       <Box component="main" sx={{ p: 2, pb: 4 }}>
         <Container maxWidth="md" disableGutters>
