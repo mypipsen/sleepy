@@ -58,3 +58,37 @@ export async function createImage({
 
   return url;
 }
+
+export async function createColoringImage({ prompt }: { prompt: string }) {
+  if (!prompt) {
+    return;
+  }
+
+  const { image } = await generateImage({
+    model: openai.image("gpt-image-1"),
+    prompt: `Create a black and white coloring book page for kids based on this description: ${prompt}.
+    
+    Style guidelines:
+    - Pure black and white line art suitable for coloring.
+    - It should be printable on an A4 sheet of paper.
+    - No shading, no grayscale, no colors.
+    - Thick, clean, continuous lines.
+    - Simple shapes easy for children to color.
+    - White background.
+    - Do not include any text or words.`,
+    size: "1024x1024",
+    n: 1,
+  });
+
+  const { url } = await put(
+    `images/${crypto.randomUUID()}`,
+    Buffer.from(image.base64, "base64"),
+    {
+      contentType: image.mediaType,
+      access: "public",
+      addRandomSuffix: true,
+    },
+  );
+
+  return url;
+}

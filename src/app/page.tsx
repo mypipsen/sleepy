@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { Suspense, useState } from "react";
 
 import { Adventure } from "~/app/_components/adventure";
+import { Coloring } from "~/app/_components/coloring";
 import { AppHeader } from "~/app/_components/shared/app-header";
 import { Sidebar } from "~/app/_components/sidebar";
 import { Story } from "~/app/_components/story";
@@ -16,7 +17,7 @@ function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [mode, setMode] = useState<"story" | "adventure">("story");
+  const [mode, setMode] = useState<"story" | "adventure" | "coloring">("story");
 
   const storyIdParam = searchParams.get("story");
   const selectedStoryId = storyIdParam ? parseInt(storyIdParam, 10) : null;
@@ -65,12 +66,21 @@ function HomeContent() {
               }
             }}
           />
-        ) : (
+        ) : mode === "adventure" ? (
           <Adventure
             adventureId={selectedAdventureId}
             mode={mode}
             onModeChange={(_mode) => {
               if (_mode !== "adventure") {
+                setMode(_mode);
+              }
+            }}
+          />
+        ) : (
+          <Coloring
+            mode={mode}
+            onModeChange={(_mode) => {
+              if (_mode !== "coloring") {
                 setMode(_mode);
               }
             }}

@@ -18,8 +18,8 @@ import { VoiceRecorder } from "./voice-recorder";
 type MessageInputProps = {
   onSubmit: (prompt: string) => void;
   isGenerating: boolean;
-  mode?: "story" | "adventure";
-  onModeChange?: (mode: "story" | "adventure") => void;
+  mode?: "story" | "adventure" | "coloring";
+  onModeChange?: (mode: "story" | "adventure" | "coloring") => void;
 };
 
 export function MessageInput({
@@ -58,10 +58,20 @@ export function MessageInput({
       >
         <Stack spacing={2} component="form" onSubmit={handleSubmit}>
           <Typography variant="h5" align="center" fontWeight="bold">
-            Start Your {mode === "adventure" ? "Adventure" : "Story"}
+            Start Your{" "}
+            {mode === "adventure"
+              ? "Adventure"
+              : mode === "coloring"
+                ? "Coloring Page"
+                : "Story"}
           </Typography>
           <Typography variant="body2" align="center" color="text.secondary">
-            Tell me what kind of {mode === "adventure" ? "adventure" : "story"}{" "}
+            Tell me what kind of{" "}
+            {mode === "adventure"
+              ? "adventure"
+              : mode === "coloring"
+                ? "coloring page"
+                : "story"}{" "}
             you would like to hear...
           </Typography>
           <TextField

@@ -4,6 +4,7 @@ import { transcribeRouter } from "~/server/api/routers/transcribeRouter";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 import { adventureRouter } from "./routers/adventureRouter";
+import { imageRouter } from "./routers/imageRouter";
 
 /**
  * This is the primary router for your server.
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   adventure: adventureRouter,
   instruction: instructionRouter,
   transcribe: transcribeRouter,
+  image: imageRouter,
 });
 
 // export type definition of API

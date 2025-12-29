@@ -19,8 +19,8 @@ type Message = {
 
 type AdventureProps = {
   adventureId?: number;
-  mode?: "story" | "adventure";
-  onModeChange?: (mode: "story" | "adventure") => void;
+  mode?: "story" | "adventure" | "coloring";
+  onModeChange?: (mode: "story" | "adventure" | "coloring") => void;
 };
 
 export function Adventure({

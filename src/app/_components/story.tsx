@@ -17,8 +17,8 @@ type Message = {
 
 type StoryProps = {
   storyId: number | null;
-  mode?: "story" | "adventure";
-  onModeChange?: (mode: "story" | "adventure") => void;
+  mode?: "story" | "adventure" | "coloring";
+  onModeChange?: (mode: "story" | "adventure" | "coloring") => void;
 };
 
 export function Story({ storyId, mode, onModeChange }: StoryProps) {
