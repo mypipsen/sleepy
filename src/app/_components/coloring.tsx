@@ -90,6 +90,7 @@ export function Coloring({ mode, onModeChange }: ColoringProps) {
         <StoryImage
           imageUrl={image}
           isLoading={createColoring.isPending}
+          variant="fun"
         />
       </Box>
       {image && !createColoring.isPending && (

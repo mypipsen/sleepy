@@ -2,14 +2,20 @@
 
 import { Paper, Stack } from "@mui/material";
 
+import { FunLoader } from "../shared/fun-loader";
 import { LoadingIndicator } from "../shared/loading-indicator";
 
 type StoryImageProps = {
   imageUrl: string | null;
   isLoading: boolean;
+  variant?: "standard" | "fun";
 };
 
-export function StoryImage({ imageUrl, isLoading }: StoryImageProps) {
+export function StoryImage({
+  imageUrl,
+  isLoading,
+  variant = "standard",
+}: StoryImageProps) {
   if (!imageUrl && !isLoading) {
     return null;
   }
@@ -26,7 +32,11 @@ export function StoryImage({ imageUrl, isLoading }: StoryImageProps) {
         }}
       >
         {isLoading ? (
-          <LoadingIndicator message="Generating image..." size={20} />
+          variant === "fun" ? (
+            <FunLoader />
+          ) : (
+            <LoadingIndicator message="Generating image..." size={20} />
+          )
         ) : typeof imageUrl === "string" ? (
           <Stack
             component="img"
