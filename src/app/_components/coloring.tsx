@@ -1,6 +1,7 @@
 "use client";
 
-import { Stack } from "@mui/material";
+import { Print as PrintIcon } from "@mui/icons-material";
+import { Box, Button, GlobalStyles, Stack } from "@mui/material";
 import { useState } from "react";
 
 import { api } from "~/trpc/react";
@@ -55,15 +56,52 @@ export function Coloring({ mode, onModeChange }: ColoringProps) {
 
   return (
     <Stack spacing={2} sx={{ p: 2, pb: 4 }}>
+      <GlobalStyles
+        styles={{
+          "@media print": {
+            "body *": {
+              visibility: "hidden",
+            },
+            "#printable-area, #printable-area *": {
+              visibility: "visible",
+            },
+            "#printable-area": {
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: "100%",
+              margin: 0,
+              padding: 0,
+            },
+            "#printable-area .MuiPaper-root": {
+              boxShadow: "none !important",
+              background: "none !important",
+              maxWidth: "100% !important",
+            },
+          },
+        }}
+      />
       <MessageList
         messages={messages}
         isLoading={false}
         isPending={false}
       />
-      <StoryImage
-        imageUrl={image}
-        isLoading={createColoring.isPending}
-      />
+      <Box id="printable-area">
+        <StoryImage
+          imageUrl={image}
+          isLoading={createColoring.isPending}
+        />
+      </Box>
+      {image && !createColoring.isPending && (
+        <Button
+          variant="contained"
+          startIcon={<PrintIcon />}
+          onClick={() => window.print()}
+          sx={{ alignSelf: "flex-start" }}
+        >
+          Print
+        </Button>
+      )}
     </Stack>
   );
 }
